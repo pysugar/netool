@@ -25,6 +25,7 @@ type Output interface {
 	Text(format string, args ...any)
 	JSON(v any) error
 	Writer() io.Writer
+	Format() OutputFormat
 }
 
 // NewOutput resolves the effective output format for cmd. If --output is not
@@ -58,6 +59,8 @@ func (o *stdOutput) JSON(v any) error {
 }
 
 func (o *stdOutput) Writer() io.Writer { return o.w }
+
+func (o *stdOutput) Format() OutputFormat { return o.format }
 
 // ConfigureLogging switches the default slog logger to human-friendly text on
 // stderr and raises the level to debug when --verbose is set.
