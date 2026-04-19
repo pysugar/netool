@@ -13,7 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	http2tool "github.com/pysugar/wheels/binproto/http2"
+	http2tool "github.com/pysugar/netool/binproto/http2"
 	"golang.org/x/net/http2/hpack"
 	"google.golang.org/protobuf/proto"
 )

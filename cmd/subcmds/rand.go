@@ -2,8 +2,8 @@ package subcmds
 
 import (
 	"fmt"
-	"github.com/pysugar/wheels/cmd/base"
-	"github.com/pysugar/wheels/uuid"
+	"github.com/pysugar/netool/cmd/base"
+	"github.com/pysugar/netool/uuid"
 	"github.com/spf13/cobra"
 )
 

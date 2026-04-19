@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pysugar/wheels/signal/done"
-	"github.com/pysugar/wheels/task"
+	"github.com/pysugar/netool/signal/done"
+	"github.com/pysugar/netool/task"
 )
 
 type Subscriber struct {

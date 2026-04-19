@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	pb "github.com/pysugar/wheels/grpc/proto"
-	"github.com/pysugar/wheels/grpc/server"
+	pb "github.com/pysugar/netool/grpc/proto"
+	"github.com/pysugar/netool/grpc/server"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 )

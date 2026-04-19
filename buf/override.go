@@ -1,7 +1,7 @@
 package buf
 
 import (
-	"github.com/pysugar/wheels/net"
+	"github.com/pysugar/netool/net"
 )
 
 type EndpointOverrideReader struct {

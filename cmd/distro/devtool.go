@@ -2,7 +2,7 @@ package distro
 
 import (
 	"fmt"
-	"github.com/pysugar/wheels/http/extensions"
+	"github.com/pysugar/netool/http/extensions"
 	"github.com/spf13/cobra"
 	"log"
 	"net/http"

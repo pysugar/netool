@@ -1,7 +1,7 @@
 package signal_test
 
 import (
-	. "github.com/pysugar/wheels/signal"
+	. "github.com/pysugar/netool/signal"
 	"testing"
 )
 

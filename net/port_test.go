@@ -1,7 +1,7 @@
 package net_test
 
 import (
-	. "github.com/pysugar/wheels/net"
+	. "github.com/pysugar/netool/net"
 	"testing"
 )
 

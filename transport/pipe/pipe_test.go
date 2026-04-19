@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/pysugar/wheels/buf"
-	"github.com/pysugar/wheels/lang"
-	. "github.com/pysugar/wheels/transport/pipe"
+	"github.com/pysugar/netool/buf"
+	"github.com/pysugar/netool/lang"
+	. "github.com/pysugar/netool/transport/pipe"
 	"golang.org/x/sync/errgroup"
 )
 

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	. "github.com/pysugar/wheels/buf"
+	. "github.com/pysugar/netool/buf"
 )
 
 func TestBufferClear(t *testing.T) {

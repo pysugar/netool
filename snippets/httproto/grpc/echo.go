@@ -2,13 +2,13 @@ package grpc
 
 import (
 	"context"
-	"github.com/pysugar/wheels/grpc/interceptors"
+	"github.com/pysugar/netool/grpc/interceptors"
 	"log"
 	"net/http"
 	"time"
 
 	grpcprometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	pb "github.com/pysugar/wheels/grpc/proto"
+	pb "github.com/pysugar/netool/grpc/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/channelz/service"
 	"google.golang.org/grpc/health"

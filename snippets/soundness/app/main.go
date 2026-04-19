@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/pysugar/wheels/snippets/soundness/agent"
+	"github.com/pysugar/netool/snippets/soundness/agent"
 )
 
 func main() {

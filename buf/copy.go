@@ -4,9 +4,9 @@ import (
 	"io"
 	"time"
 
-	"github.com/pysugar/wheels/errors"
-	"github.com/pysugar/wheels/features/stats"
-	"github.com/pysugar/wheels/timer"
+	"github.com/pysugar/netool/errors"
+	"github.com/pysugar/netool/features/stats"
+	"github.com/pysugar/netool/timer"
 )
 
 type dataHandler func(MultiBuffer)

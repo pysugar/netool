@@ -3,7 +3,7 @@ package serial_test
 import (
 	"errors"
 	"github.com/google/go-cmp/cmp"
-	. "github.com/pysugar/wheels/serial"
+	. "github.com/pysugar/netool/serial"
 	"testing"
 )
 

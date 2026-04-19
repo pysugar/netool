@@ -2,7 +2,7 @@ package task
 
 import (
 	"context"
-	"github.com/pysugar/wheels/signal/semaphore"
+	"github.com/pysugar/netool/signal/semaphore"
 )
 
 // OnSuccess executes g() after f() returns nil.

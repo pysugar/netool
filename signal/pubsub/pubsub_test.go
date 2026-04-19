@@ -1,7 +1,7 @@
 package pubsub_test
 
 import (
-	. "github.com/pysugar/wheels/signal/pubsub"
+	. "github.com/pysugar/netool/signal/pubsub"
 	"testing"
 )
 

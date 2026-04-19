@@ -4,7 +4,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/pysugar/wheels/cmd/distro/servicegovernance"
+	"github.com/pysugar/netool/cmd/distro/servicegovernance"
 	"github.com/spf13/cobra"
 )
 

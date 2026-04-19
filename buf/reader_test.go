@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/pysugar/wheels/buf"
-	"github.com/pysugar/wheels/transport/pipe"
+	. "github.com/pysugar/netool/buf"
+	"github.com/pysugar/netool/transport/pipe"
 )
 
 func TestBytesReaderWriteTo(t *testing.T) {

@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/pysugar/wheels/snippets/httproto/sse"
+	"github.com/pysugar/netool/snippets/httproto/sse"
 	"log"
 	"net/http"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/pysugar/wheels/http/extensions"
-	"github.com/pysugar/wheels/snippets/httproto/h2c"
-	"github.com/pysugar/wheels/snippets/httproto/ws"
+	"github.com/pysugar/netool/http/extensions"
+	"github.com/pysugar/netool/snippets/httproto/h2c"
+	"github.com/pysugar/netool/snippets/httproto/ws"
 )
 
 // export GODEBUG=http2debug=2

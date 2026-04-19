@@ -3,8 +3,8 @@ package serial_test
 import (
 	"bytes"
 	"github.com/google/go-cmp/cmp"
-	"github.com/pysugar/wheels/buf"
-	"github.com/pysugar/wheels/serial"
+	"github.com/pysugar/netool/buf"
+	"github.com/pysugar/netool/serial"
 	"testing"
 )
 

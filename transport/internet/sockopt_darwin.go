@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/pysugar/wheels/net"
+	"github.com/pysugar/netool/net"
 	"golang.org/x/sys/unix"
 )
 

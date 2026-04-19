@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/pysugar/wheels/cmd/base"
+	"github.com/pysugar/netool/cmd/base"
 	"github.com/spf13/cobra"
 	"io"
 	"log"

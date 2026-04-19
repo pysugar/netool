@@ -2,7 +2,7 @@ package base
 
 import (
 	"fmt"
-	"github.com/pysugar/wheels/serial"
+	"github.com/pysugar/netool/serial"
 	"runtime"
 )
 

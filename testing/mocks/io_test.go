@@ -2,7 +2,7 @@ package mocks_test
 
 import (
 	"github.com/golang/mock/gomock"
-	"github.com/pysugar/wheels/testing/mocks"
+	"github.com/pysugar/netool/testing/mocks"
 	"io"
 	"testing"
 )

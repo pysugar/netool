@@ -1,9 +1,9 @@
 package buf
 
 import (
-	"github.com/pysugar/wheels/errors"
-	"github.com/pysugar/wheels/features/stats"
-	"github.com/pysugar/wheels/lang"
+	"github.com/pysugar/netool/errors"
+	"github.com/pysugar/netool/features/stats"
+	"github.com/pysugar/netool/lang"
 	"io"
 	"net"
 	"sync"

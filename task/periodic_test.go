@@ -1,7 +1,7 @@
 package task_test
 
 import (
-	. "github.com/pysugar/wheels/task"
+	. "github.com/pysugar/netool/task"
 	"testing"
 	"time"
 )

@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	pb "github.com/pysugar/wheels/examples/net/heartbeat/grpc/heartbeat"
+	pb "github.com/pysugar/netool/examples/net/heartbeat/grpc/heartbeat"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/keepalive"

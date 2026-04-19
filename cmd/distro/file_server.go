@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/pysugar/wheels/net/ipaddr"
+	"github.com/pysugar/netool/net/ipaddr"
 	"github.com/spf13/cobra"
 )
 

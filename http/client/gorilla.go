@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/pysugar/wheels/http/extensions"
+	"github.com/pysugar/netool/http/extensions"
 )
 
 const (

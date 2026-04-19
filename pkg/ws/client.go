@@ -5,7 +5,7 @@ package ws
 //	"crypto/tls"
 //	"fmt"
 //	"github.com/gorilla/websocket"
-//	//"github.com/pysugar/wheels/http/extensions"
+//	//"github.com/pysugar/netool/http/extensions"
 //	"log"
 //	"net/http"
 //	"strings"

@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/pysugar/wheels/examples/net/heartbeat/tcpv2/ldm"
+	"github.com/pysugar/netool/examples/net/heartbeat/tcpv2/ldm"
 	"io"
 	"net"
 	"time"

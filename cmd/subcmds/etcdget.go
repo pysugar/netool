@@ -3,7 +3,7 @@ package subcmds
 import (
 	"context"
 	"fmt"
-	"github.com/pysugar/wheels/cmd/base"
+	"github.com/pysugar/netool/cmd/base"
 	"github.com/spf13/cobra"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"log"

@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/pysugar/wheels/http/extensions"
+	"github.com/pysugar/netool/http/extensions"
 )
 
 func main() {

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pysugar/wheels/buf"
-	"github.com/pysugar/wheels/net"
-	"github.com/pysugar/wheels/task"
-	"github.com/pysugar/wheels/transport/internet"
-	"github.com/pysugar/wheels/transport/pipe"
+	"github.com/pysugar/netool/buf"
+	"github.com/pysugar/netool/net"
+	"github.com/pysugar/netool/task"
+	"github.com/pysugar/netool/transport/internet"
+	"github.com/pysugar/netool/transport/pipe"
 )
 
 type Server struct {

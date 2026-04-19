@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	pb "github.com/pysugar/wheels/grpc/proto"
+	pb "github.com/pysugar/netool/grpc/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/grpclog"

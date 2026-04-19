@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	. "github.com/pysugar/wheels/buf"
-	"github.com/pysugar/wheels/testing/servers/tcp"
+	. "github.com/pysugar/netool/buf"
+	"github.com/pysugar/netool/testing/servers/tcp"
 	"golang.org/x/sync/errgroup"
 )
 

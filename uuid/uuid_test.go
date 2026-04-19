@@ -2,7 +2,7 @@ package uuid_test
 
 import (
 	"github.com/google/go-cmp/cmp"
-	. "github.com/pysugar/wheels/uuid"
+	. "github.com/pysugar/netool/uuid"
 	"testing"
 )
 

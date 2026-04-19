@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pysugar/wheels/grpc/tcpclient"
+	"github.com/pysugar/netool/grpc/tcpclient"
 	grpchealthv1 "google.golang.org/grpc/health/grpc_health_v1"
 )
 

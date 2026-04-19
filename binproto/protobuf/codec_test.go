@@ -1,7 +1,7 @@
 package protobuf_test
 
 import (
-	"github.com/pysugar/wheels/binproto/protobuf"
+	"github.com/pysugar/netool/binproto/protobuf"
 	"os"
 	"testing"
 )

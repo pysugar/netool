@@ -2,7 +2,7 @@ package timer
 
 import (
 	"context"
-	"github.com/pysugar/wheels/task"
+	"github.com/pysugar/netool/task"
 	"sync"
 	"time"
 )

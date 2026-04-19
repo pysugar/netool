@@ -4,8 +4,8 @@ package dns
 //import (
 //	"encoding/binary"
 //	"github.com/gptlocal/netools/common"
-//	"github.com/pysugar/wheels/buf"
-//	"github.com/pysugar/wheels/serial"
+//	"github.com/pysugar/netool/buf"
+//	"github.com/pysugar/netool/serial"
 //	"golang.org/x/net/dns/dnsmessage"
 //	"sync"
 //)

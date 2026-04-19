@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/pysugar/wheels/binproto/protobuf"
+	"github.com/pysugar/netool/binproto/protobuf"
 	"google.golang.org/protobuf/proto"
 )
 

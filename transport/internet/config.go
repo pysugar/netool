@@ -2,8 +2,8 @@ package internet
 
 import (
 	"fmt"
-	"github.com/pysugar/wheels/features"
-	"github.com/pysugar/wheels/serial"
+	"github.com/pysugar/netool/features"
+	"github.com/pysugar/netool/serial"
 )
 
 type ConfigCreator func() interface{}

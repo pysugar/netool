@@ -2,7 +2,7 @@ package timer_test
 
 import (
 	"context"
-	. "github.com/pysugar/wheels/timer"
+	. "github.com/pysugar/netool/timer"
 	"runtime"
 	"testing"
 	"time"

@@ -4,8 +4,8 @@
 package buf
 
 import (
-	"github.com/pysugar/wheels/features/stats"
-	"github.com/pysugar/wheels/platform"
+	"github.com/pysugar/netool/features/stats"
+	"github.com/pysugar/netool/platform"
 	"io"
 	"syscall"
 )

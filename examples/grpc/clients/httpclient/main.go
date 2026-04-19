@@ -16,8 +16,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	http2tool "github.com/pysugar/wheels/binproto/http2"
-	"github.com/pysugar/wheels/http/extensions"
+	http2tool "github.com/pysugar/netool/binproto/http2"
+	"github.com/pysugar/netool/http/extensions"
 	"golang.org/x/net/http2"
 	grpchealthv1 "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/protobuf/proto"

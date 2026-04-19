@@ -2,8 +2,8 @@ package policy
 
 import (
 	"context"
-	"github.com/pysugar/wheels/features"
-	"github.com/pysugar/wheels/platform"
+	"github.com/pysugar/netool/features"
+	"github.com/pysugar/netool/platform"
 	"runtime"
 	"time"
 )

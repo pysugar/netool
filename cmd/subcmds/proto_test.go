@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/pysugar/wheels/cmd/subcmds"
-	"github.com/pysugar/wheels/examples/user"
-	"github.com/pysugar/wheels/serial"
+	"github.com/pysugar/netool/cmd/subcmds"
+	"github.com/pysugar/netool/examples/user"
+	"github.com/pysugar/netool/serial"
 )
 
 const (

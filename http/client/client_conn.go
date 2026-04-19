@@ -17,7 +17,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/pysugar/wheels/concurrent"
+	"github.com/pysugar/netool/concurrent"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/hpack"
 )

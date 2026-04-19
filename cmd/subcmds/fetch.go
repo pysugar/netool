@@ -14,9 +14,9 @@ import (
 	"time"
 
 	"github.com/jhump/protoreflect/desc/protoparse"
-	"github.com/pysugar/wheels/cmd/base"
-	"github.com/pysugar/wheels/http/client"
-	"github.com/pysugar/wheels/http/extensions"
+	"github.com/pysugar/netool/cmd/base"
+	"github.com/pysugar/netool/http/client"
+	"github.com/pysugar/netool/http/extensions"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"

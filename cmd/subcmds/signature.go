@@ -3,8 +3,8 @@ package subcmds
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/pysugar/wheels/authenticate/signature"
-	"github.com/pysugar/wheels/cmd/base"
+	"github.com/pysugar/netool/authenticate/signature"
+	"github.com/pysugar/netool/cmd/base"
 	"github.com/spf13/cobra"
 )
 

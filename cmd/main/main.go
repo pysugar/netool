@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 
-	"github.com/pysugar/wheels/cmd/base"
-	_ "github.com/pysugar/wheels/cmd/distro"
-	_ "github.com/pysugar/wheels/cmd/subcmds"
+	"github.com/pysugar/netool/cmd/base"
+	_ "github.com/pysugar/netool/cmd/distro"
+	_ "github.com/pysugar/netool/cmd/subcmds"
 )
 
 var (

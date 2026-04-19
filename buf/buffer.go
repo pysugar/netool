@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pysugar/wheels/bytespool"
-	"github.com/pysugar/wheels/errors"
-	"github.com/pysugar/wheels/net"
+	"github.com/pysugar/netool/bytespool"
+	"github.com/pysugar/netool/errors"
+	"github.com/pysugar/netool/net"
 )
 
 const (

@@ -1,7 +1,7 @@
 package bitmask_test
 
 import (
-	. "github.com/pysugar/wheels/bitmask"
+	. "github.com/pysugar/netool/bitmask"
 	"testing"
 )
 

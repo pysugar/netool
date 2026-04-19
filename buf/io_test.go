@@ -5,9 +5,9 @@ import (
 	"io"
 	"testing"
 
-	. "github.com/pysugar/wheels/buf"
-	"github.com/pysugar/wheels/net"
-	"github.com/pysugar/wheels/testing/servers/tcp"
+	. "github.com/pysugar/netool/buf"
+	"github.com/pysugar/netool/net"
+	"github.com/pysugar/netool/testing/servers/tcp"
 )
 
 func TestWriterCreation(t *testing.T) {

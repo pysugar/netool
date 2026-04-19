@@ -1,8 +1,8 @@
 package udp
 
 import (
-	"github.com/pysugar/wheels/buf"
-	"github.com/pysugar/wheels/net"
+	"github.com/pysugar/netool/buf"
+	"github.com/pysugar/netool/net"
 )
 
 // Packet is a UDP packet together with its source and destination address.

@@ -2,7 +2,7 @@ package net_test
 
 import (
 	"github.com/google/go-cmp/cmp"
-	. "github.com/pysugar/wheels/net"
+	. "github.com/pysugar/netool/net"
 	"testing"
 )
 

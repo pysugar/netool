@@ -1,7 +1,7 @@
 package retry
 
 import (
-	"github.com/pysugar/wheels/errors"
+	"github.com/pysugar/netool/errors"
 	"time"
 )
 

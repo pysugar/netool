@@ -20,7 +20,7 @@ package concurrent
 
 import (
 	"context"
-	"github.com/pysugar/wheels/buffer"
+	"github.com/pysugar/netool/buffer"
 )
 
 // CallbackSerializer provides a mechanism to schedule callbacks in a

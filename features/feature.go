@@ -1,7 +1,7 @@
 package features
 
 import (
-	"github.com/pysugar/wheels/lang"
+	"github.com/pysugar/netool/lang"
 	"log"
 )
 

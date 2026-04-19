@@ -1,7 +1,7 @@
 package bytespool_test
 
 import (
-	"github.com/pysugar/wheels/bytespool"
+	"github.com/pysugar/netool/bytespool"
 	"testing"
 )
 

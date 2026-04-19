@@ -1,8 +1,8 @@
 package retry_test
 
 import (
-	"github.com/pysugar/wheels/errors"
-	"github.com/pysugar/wheels/retry"
+	"github.com/pysugar/netool/errors"
+	"github.com/pysugar/netool/retry"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"

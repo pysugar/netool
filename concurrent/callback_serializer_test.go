@@ -2,7 +2,7 @@ package concurrent_test
 
 import (
 	"context"
-	"github.com/pysugar/wheels/concurrent"
+	"github.com/pysugar/netool/concurrent"
 	"sync"
 	"testing"
 )

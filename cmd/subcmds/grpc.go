@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pysugar/wheels/binproto/grpc/codec"
-	"github.com/pysugar/wheels/cmd/base"
+	"github.com/pysugar/netool/binproto/grpc/codec"
+	"github.com/pysugar/netool/cmd/base"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

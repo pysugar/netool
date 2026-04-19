@@ -3,8 +3,8 @@ package stats
 import (
 	"context"
 	"errors"
-	"github.com/pysugar/wheels/features"
-	"github.com/pysugar/wheels/lang"
+	"github.com/pysugar/netool/features"
+	"github.com/pysugar/netool/lang"
 )
 
 // Counter is the interface for stats counters.

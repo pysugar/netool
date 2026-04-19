@@ -3,7 +3,7 @@ package stat
 import (
 	"net"
 
-	"github.com/pysugar/wheels/features/stats"
+	"github.com/pysugar/netool/features/stats"
 )
 
 type Connection interface {

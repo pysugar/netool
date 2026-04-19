@@ -1,7 +1,7 @@
 package serial_test
 
 import (
-	. "github.com/pysugar/wheels/serial"
+	. "github.com/pysugar/netool/serial"
 	"testing"
 )
 

@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pysugar/wheels/buf"
-	"github.com/pysugar/wheels/signal"
-	"github.com/pysugar/wheels/signal/done"
+	"github.com/pysugar/netool/buf"
+	"github.com/pysugar/netool/signal"
+	"github.com/pysugar/netool/signal/done"
 )
 
 type state byte

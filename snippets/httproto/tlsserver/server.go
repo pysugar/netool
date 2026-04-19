@@ -2,16 +2,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/pysugar/wheels/snippets/httproto/sse"
+	"github.com/pysugar/netool/snippets/httproto/sse"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/pysugar/wheels/http/extensions"
-	"github.com/pysugar/wheels/snippets/httproto/grpc"
-	"github.com/pysugar/wheels/snippets/httproto/ws"
+	"github.com/pysugar/netool/http/extensions"
+	"github.com/pysugar/netool/snippets/httproto/grpc"
+	"github.com/pysugar/netool/snippets/httproto/ws"
 	"google.golang.org/grpc/grpclog"
 )
 

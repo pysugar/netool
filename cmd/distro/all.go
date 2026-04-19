@@ -1,6 +1,6 @@
 package distro
 
-import "github.com/pysugar/wheels/cmd/base"
+import "github.com/pysugar/netool/cmd/base"
 
 func init() {
 	base.AddSubCommands(fileServerCmd)

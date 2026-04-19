@@ -1,8 +1,8 @@
 package buf
 
 import (
-	"github.com/pysugar/wheels/errors"
-	"github.com/pysugar/wheels/serial"
+	"github.com/pysugar/netool/errors"
+	"github.com/pysugar/netool/serial"
 	"io"
 )
 

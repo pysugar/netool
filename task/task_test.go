@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	. "github.com/pysugar/wheels/task"
+	. "github.com/pysugar/netool/task"
 )
 
 func TestExecuteParallel(t *testing.T) {

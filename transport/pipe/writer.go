@@ -1,6 +1,6 @@
 package pipe
 
-import "github.com/pysugar/wheels/buf"
+import "github.com/pysugar/netool/buf"
 
 // Writer is a buf.Writer that writes data into a pipe.
 type Writer struct {

@@ -1,7 +1,7 @@
 package units_test
 
 import (
-	"github.com/pysugar/wheels/units"
+	"github.com/pysugar/netool/units"
 	"testing"
 )
 

@@ -1,7 +1,7 @@
 package pipe
 
 import (
-	"github.com/pysugar/wheels/buf"
+	"github.com/pysugar/netool/buf"
 	"time"
 )
 

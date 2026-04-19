@@ -2,8 +2,8 @@ package bittorrent
 
 import (
 	"encoding/binary"
-	"github.com/pysugar/wheels/buf"
-	"github.com/pysugar/wheels/errors"
+	"github.com/pysugar/netool/buf"
+	"github.com/pysugar/netool/errors"
 	"math"
 	"time"
 )

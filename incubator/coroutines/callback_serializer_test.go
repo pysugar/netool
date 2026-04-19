@@ -2,7 +2,7 @@ package coroutines_test
 
 import (
 	"context"
-	"github.com/pysugar/wheels/incubator/coroutines"
+	"github.com/pysugar/netool/incubator/coroutines"
 	"sync"
 	"testing"
 )

@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/pysugar/wheels/buf"
-	"github.com/pysugar/wheels/errors"
-	"github.com/pysugar/wheels/testing/mocks"
+	"github.com/pysugar/netool/buf"
+	"github.com/pysugar/netool/errors"
+	"github.com/pysugar/netool/testing/mocks"
 )
 
 func TestReadError(t *testing.T) {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pysugar/wheels/net"
-	"github.com/pysugar/wheels/transport/internet/stat"
+	"github.com/pysugar/netool/net"
+	"github.com/pysugar/netool/transport/internet/stat"
 )
 
 var transportListenerCache = make(map[string]ListenFunc)

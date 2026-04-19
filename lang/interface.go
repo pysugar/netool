@@ -1,6 +1,6 @@
 package lang
 
-import "github.com/pysugar/wheels/errors"
+import "github.com/pysugar/netool/errors"
 
 // Closable is the interface for objects that can release its resources.
 //

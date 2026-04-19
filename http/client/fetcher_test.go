@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pysugar/wheels/http/extensions"
+	"github.com/pysugar/netool/http/extensions"
 	grpchealthv1 "google.golang.org/grpc/health/grpc_health_v1"
 )
 

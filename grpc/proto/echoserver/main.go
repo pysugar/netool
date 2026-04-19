@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/pysugar/wheels/grpc/interceptors"
-	pb "github.com/pysugar/wheels/grpc/proto"
+	"github.com/pysugar/netool/grpc/interceptors"
+	pb "github.com/pysugar/netool/grpc/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/channelz/service"
 	"google.golang.org/grpc/grpclog"

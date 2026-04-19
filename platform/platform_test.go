@@ -3,7 +3,7 @@ package platform_test
 import (
 	"testing"
 
-	. "github.com/pysugar/wheels/platform"
+	. "github.com/pysugar/netool/platform"
 )
 
 func TestNormalizeEnvName(t *testing.T) {

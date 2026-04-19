@@ -2,8 +2,8 @@ package user_test
 
 import (
 	"fmt"
-	"github.com/pysugar/wheels/examples/user"
-	"github.com/pysugar/wheels/serial"
+	"github.com/pysugar/netool/examples/user"
+	"github.com/pysugar/netool/serial"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"
 	"reflect"

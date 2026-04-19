@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/pysugar/wheels/http/extensions"
-	"github.com/pysugar/wheels/snippets/httproto/h2c"
-	"github.com/pysugar/wheels/snippets/httproto/tls10"
-	"github.com/pysugar/wheels/snippets/httproto/ws"
+	"github.com/pysugar/netool/http/extensions"
+	"github.com/pysugar/netool/snippets/httproto/h2c"
+	"github.com/pysugar/netool/snippets/httproto/tls10"
+	"github.com/pysugar/netool/snippets/httproto/ws"
 )
 
 // export GODEBUG=http2debug=1

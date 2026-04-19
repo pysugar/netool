@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/pires/go-proxyproto"
-	"github.com/pysugar/wheels/errors"
-	"github.com/pysugar/wheels/net"
+	"github.com/pysugar/netool/errors"
+	"github.com/pysugar/netool/net"
 	"github.com/sagernet/sing/common/control"
 )
 
