@@ -5,13 +5,13 @@ import (
 	"strings"
 
 	"github.com/pysugar/netool/cmd/base"
-	"github.com/pysugar/netool/cmd/distro/servicegovernance"
+	etcddisc "github.com/pysugar/netool/cmd/internal/discovery/etcd"
 	"github.com/spf13/cobra"
 )
 
 var (
-	NamingRegistryServices = map[string]servicegovernance.RegisterNamingService{
-		"etcd": servicegovernance.RegisterETCD,
+	NamingRegistryServices = map[string]etcddisc.RegisterNamingService{
+		"etcd": etcddisc.RegisterETCD,
 	}
 
 	registryCmd = &cobra.Command{

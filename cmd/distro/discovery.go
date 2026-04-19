@@ -5,13 +5,13 @@ import (
 	"strings"
 
 	"github.com/pysugar/netool/cmd/base"
-	"github.com/pysugar/netool/cmd/distro/servicegovernance"
+	etcddisc "github.com/pysugar/netool/cmd/internal/discovery/etcd"
 	"github.com/spf13/cobra"
 )
 
 var (
-	NamingDiscoverGetServices = map[string]servicegovernance.DiscoverNamingService{
-		"etcd": servicegovernance.DiscoverETCD,
+	NamingDiscoverGetServices = map[string]etcddisc.DiscoverNamingService{
+		"etcd": etcddisc.DiscoverETCD,
 	}
 
 	discoveryCmd = &cobra.Command{

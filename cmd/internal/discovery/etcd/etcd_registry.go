@@ -1,4 +1,4 @@
-package servicegovernance
+package etcd
 
 import (
 	"context"
