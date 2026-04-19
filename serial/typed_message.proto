@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package pysugar.wheels.serial;
+package pysugar.netool.serial;
 option csharp_namespace = "PySugar.Wheels.Serial";
-option go_package = "github.com/pysugar/wheels/serial";
+option go_package = "github.com/pysugar/netool/serial";
 option java_package = "com.github.pysuger.wheels.serial";
 option java_multiple_files = true;
 

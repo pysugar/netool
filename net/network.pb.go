@@ -82,7 +82,7 @@ type NetworkList struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Network []Network `protobuf:"varint,1,rep,packed,name=network,proto3,enum=pysugar.wheels.net.Network" json:"network,omitempty"`
+	Network []Network `protobuf:"varint,1,rep,packed,name=network,proto3,enum=pysugar.netool.net.Network" json:"network,omitempty"`
 }
 
 func (x *NetworkList) Reset() {
@@ -161,11 +161,11 @@ func file_net_network_proto_rawDescGZIP() []byte {
 var file_net_network_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_net_network_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_net_network_proto_goTypes = []any{
-	(Network)(0),        // 0: pysugar.wheels.net.Network
-	(*NetworkList)(nil), // 1: pysugar.wheels.net.NetworkList
+	(Network)(0),        // 0: pysugar.netool.net.Network
+	(*NetworkList)(nil), // 1: pysugar.netool.net.NetworkList
 }
 var file_net_network_proto_depIdxs = []int32{
-	0, // 0: pysugar.wheels.net.NetworkList.network:type_name -> pysugar.wheels.net.Network
+	0, // 0: pysugar.netool.net.NetworkList.network:type_name -> pysugar.netool.net.Network
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

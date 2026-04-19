@@ -26,7 +26,7 @@ type Endpoint struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Network Network     `protobuf:"varint,1,opt,name=network,proto3,enum=pysugar.wheels.net.Network" json:"network,omitempty"`
+	Network Network     `protobuf:"varint,1,opt,name=network,proto3,enum=pysugar.netool.net.Network" json:"network,omitempty"`
 	Address *IPOrDomain `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
 	Port    uint32      `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
 }
@@ -124,13 +124,13 @@ func file_net_destination_proto_rawDescGZIP() []byte {
 
 var file_net_destination_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_net_destination_proto_goTypes = []any{
-	(*Endpoint)(nil),   // 0: pysugar.wheels.net.Endpoint
-	(Network)(0),       // 1: pysugar.wheels.net.Network
-	(*IPOrDomain)(nil), // 2: pysugar.wheels.net.IPOrDomain
+	(*Endpoint)(nil),   // 0: pysugar.netool.net.Endpoint
+	(Network)(0),       // 1: pysugar.netool.net.Network
+	(*IPOrDomain)(nil), // 2: pysugar.netool.net.IPOrDomain
 }
 var file_net_destination_proto_depIdxs = []int32{
-	1, // 0: pysugar.wheels.net.Endpoint.network:type_name -> pysugar.wheels.net.Network
-	2, // 1: pysugar.wheels.net.Endpoint.address:type_name -> pysugar.wheels.net.IPOrDomain
+	1, // 0: pysugar.netool.net.Endpoint.network:type_name -> pysugar.netool.net.Network
+	2, // 1: pysugar.netool.net.Endpoint.address:type_name -> pysugar.netool.net.IPOrDomain
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

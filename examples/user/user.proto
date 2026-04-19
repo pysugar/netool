@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package pysugar.wheels.examples.user;
+package pysugar.netool.examples.user;
 option csharp_namespace = "PySugar.Wheels.Examples.User";
-option go_package = "github.com/pysugar/wheels/examples/user";
+option go_package = "github.com/pysugar/netool/examples/user";
 option java_package = "com.github.pysuger.wheels.examples.user";
 option java_multiple_files = true;
 

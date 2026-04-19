@@ -108,7 +108,7 @@ func file_serial_typed_message_proto_rawDescGZIP() []byte {
 
 var file_serial_typed_message_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_serial_typed_message_proto_goTypes = []any{
-	(*TypedMessage)(nil), // 0: pysugar.wheels.serial.TypedMessage
+	(*TypedMessage)(nil), // 0: pysugar.netool.serial.TypedMessage
 }
 var file_serial_typed_message_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type

@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package proto;
-option go_package = "github.com/pysugar/wheels/grpc/proto";
+option go_package = "github.com/pysugar/netool/grpc/proto";
 
 service EchoService {
   rpc Echo (EchoRequest) returns (EchoResponse) {}

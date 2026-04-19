@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package proto;
-option go_package = "github.com/pysugar/wheels/examples/proto";
+option go_package = "github.com/pysugar/netool/examples/proto";
 
 // 枚举类型示例
 enum Status {

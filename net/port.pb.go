@@ -161,11 +161,11 @@ func file_net_port_proto_rawDescGZIP() []byte {
 
 var file_net_port_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_net_port_proto_goTypes = []any{
-	(*PortRange)(nil), // 0: pysugar.wheels.net.PortRange
-	(*PortList)(nil),  // 1: pysugar.wheels.net.PortList
+	(*PortRange)(nil), // 0: pysugar.netool.net.PortRange
+	(*PortList)(nil),  // 1: pysugar.netool.net.PortList
 }
 var file_net_port_proto_depIdxs = []int32{
-	0, // 0: pysugar.wheels.net.PortList.range:type_name -> pysugar.wheels.net.PortRange
+	0, // 0: pysugar.netool.net.PortList.range:type_name -> pysugar.netool.net.PortRange
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

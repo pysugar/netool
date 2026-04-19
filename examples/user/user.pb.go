@@ -7,7 +7,7 @@
 package user
 
 import (
-	serial "github.com/pysugar/wheels/serial"
+	serial "github.com/pysugar/netool/serial"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -182,12 +182,12 @@ func file_user_user_proto_rawDescGZIP() []byte {
 
 var file_user_user_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_user_user_proto_goTypes = []any{
-	(*User)(nil),                // 0: pysugar.wheels.examples.user.User
-	(*Account)(nil),             // 1: pysugar.wheels.examples.user.Account
-	(*serial.TypedMessage)(nil), // 2: pysugar.wheels.serial.TypedMessage
+	(*User)(nil),                // 0: pysugar.netool.examples.user.User
+	(*Account)(nil),             // 1: pysugar.netool.examples.user.Account
+	(*serial.TypedMessage)(nil), // 2: pysugar.netool.serial.TypedMessage
 }
 var file_user_user_proto_depIdxs = []int32{
-	2, // 0: pysugar.wheels.examples.user.User.account:type_name -> pysugar.wheels.serial.TypedMessage
+	2, // 0: pysugar.netool.examples.user.User.account:type_name -> pysugar.netool.serial.TypedMessage
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

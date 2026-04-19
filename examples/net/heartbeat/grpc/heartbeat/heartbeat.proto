@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package heartbeat;
 
-option go_package = "github.com/pysugar/wheels/examples/net/heartbeat/grpc/heartbeat";
+option go_package = "github.com/pysugar/netool/examples/net/heartbeat/grpc/heartbeat";
 
 message HeartbeatRequest {
   string message = 1;

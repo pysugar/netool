@@ -7,7 +7,7 @@
 package internet
 
 import (
-	serial "github.com/pysugar/wheels/serial"
+	serial "github.com/pysugar/netool/serial"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -216,7 +216,7 @@ type TransportConfig struct {
 	// Deprecated. Use the string form below.
 	//
 	// Deprecated: Marked as deprecated in transport/internet/config.proto.
-	Protocol TransportProtocol `protobuf:"varint,1,opt,name=protocol,proto3,enum=pysugar.wheels.transport.internet.TransportProtocol" json:"protocol,omitempty"`
+	Protocol TransportProtocol `protobuf:"varint,1,opt,name=protocol,proto3,enum=pysugar.netool.transport.internet.TransportProtocol" json:"protocol,omitempty"`
 	// Type of network that this settings supports.
 	ProtocolName string `protobuf:"bytes,3,opt,name=protocol_name,json=protocolName,proto3" json:"protocol_name,omitempty"`
 	// Specific settings. Must be of the transports.
@@ -285,7 +285,7 @@ type StreamConfig struct {
 	// Effective network. Deprecated. Use the string form below.
 	//
 	// Deprecated: Marked as deprecated in transport/internet/config.proto.
-	Protocol TransportProtocol `protobuf:"varint,1,opt,name=protocol,proto3,enum=pysugar.wheels.transport.internet.TransportProtocol" json:"protocol,omitempty"`
+	Protocol TransportProtocol `protobuf:"varint,1,opt,name=protocol,proto3,enum=pysugar.netool.transport.internet.TransportProtocol" json:"protocol,omitempty"`
 	// Effective network.
 	ProtocolName      string             `protobuf:"bytes,5,opt,name=protocol_name,json=protocolName,proto3" json:"protocol_name,omitempty"`
 	TransportSettings []*TransportConfig `protobuf:"bytes,2,rep,name=transport_settings,json=transportSettings,proto3" json:"transport_settings,omitempty"`
@@ -437,13 +437,13 @@ type SocketConfig struct {
 	// TFO is the state of TFO settings.
 	Tfo int32 `protobuf:"varint,2,opt,name=tfo,proto3" json:"tfo,omitempty"`
 	// TProxy is for enabling TProxy socket option.
-	Tproxy SocketConfig_TProxyMode `protobuf:"varint,3,opt,name=tproxy,proto3,enum=pysugar.wheels.transport.internet.SocketConfig_TProxyMode" json:"tproxy,omitempty"`
+	Tproxy SocketConfig_TProxyMode `protobuf:"varint,3,opt,name=tproxy,proto3,enum=pysugar.netool.transport.internet.SocketConfig_TProxyMode" json:"tproxy,omitempty"`
 	// ReceiveOriginalDestAddress is for enabling IP_RECVORIGDSTADDR socket option. This option is for UDP only.
 	ReceiveOriginalDestAddress bool           `protobuf:"varint,4,opt,name=receive_original_dest_address,json=receiveOriginalDestAddress,proto3" json:"receive_original_dest_address,omitempty"`
 	BindAddress                []byte         `protobuf:"bytes,5,opt,name=bind_address,json=bindAddress,proto3" json:"bind_address,omitempty"`
 	BindPort                   uint32         `protobuf:"varint,6,opt,name=bind_port,json=bindPort,proto3" json:"bind_port,omitempty"`
 	AcceptProxyProtocol        bool           `protobuf:"varint,7,opt,name=accept_proxy_protocol,json=acceptProxyProtocol,proto3" json:"accept_proxy_protocol,omitempty"`
-	DomainStrategy             DomainStrategy `protobuf:"varint,8,opt,name=domain_strategy,json=domainStrategy,proto3,enum=pysugar.wheels.transport.internet.DomainStrategy" json:"domain_strategy,omitempty"`
+	DomainStrategy             DomainStrategy `protobuf:"varint,8,opt,name=domain_strategy,json=domainStrategy,proto3,enum=pysugar.netool.transport.internet.DomainStrategy" json:"domain_strategy,omitempty"`
 	DialerProxy                string         `protobuf:"bytes,9,opt,name=dialer_proxy,json=dialerProxy,proto3" json:"dialer_proxy,omitempty"`
 	TcpKeepAliveInterval       int32          `protobuf:"varint,10,opt,name=tcp_keep_alive_interval,json=tcpKeepAliveInterval,proto3" json:"tcp_keep_alive_interval,omitempty"`
 	TcpKeepAliveIdle           int32          `protobuf:"varint,11,opt,name=tcp_keep_alive_idle,json=tcpKeepAliveIdle,proto3" json:"tcp_keep_alive_idle,omitempty"`
@@ -776,24 +776,24 @@ func file_transport_internet_config_proto_rawDescGZIP() []byte {
 var file_transport_internet_config_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
 var file_transport_internet_config_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_transport_internet_config_proto_goTypes = []any{
-	(TransportProtocol)(0),       // 0: pysugar.wheels.transport.internet.TransportProtocol
-	(DomainStrategy)(0),          // 1: pysugar.wheels.transport.internet.DomainStrategy
-	(SocketConfig_TProxyMode)(0), // 2: pysugar.wheels.transport.internet.SocketConfig.TProxyMode
-	(*TransportConfig)(nil),      // 3: pysugar.wheels.transport.internet.TransportConfig
-	(*StreamConfig)(nil),         // 4: pysugar.wheels.transport.internet.StreamConfig
-	(*ProxyConfig)(nil),          // 5: pysugar.wheels.transport.internet.ProxyConfig
-	(*SocketConfig)(nil),         // 6: pysugar.wheels.transport.internet.SocketConfig
-	(*serial.TypedMessage)(nil),  // 7: pysugar.wheels.serial.TypedMessage
+	(TransportProtocol)(0),       // 0: pysugar.netool.transport.internet.TransportProtocol
+	(DomainStrategy)(0),          // 1: pysugar.netool.transport.internet.DomainStrategy
+	(SocketConfig_TProxyMode)(0), // 2: pysugar.netool.transport.internet.SocketConfig.TProxyMode
+	(*TransportConfig)(nil),      // 3: pysugar.netool.transport.internet.TransportConfig
+	(*StreamConfig)(nil),         // 4: pysugar.netool.transport.internet.StreamConfig
+	(*ProxyConfig)(nil),          // 5: pysugar.netool.transport.internet.ProxyConfig
+	(*SocketConfig)(nil),         // 6: pysugar.netool.transport.internet.SocketConfig
+	(*serial.TypedMessage)(nil),  // 7: pysugar.netool.serial.TypedMessage
 }
 var file_transport_internet_config_proto_depIdxs = []int32{
-	0, // 0: pysugar.wheels.transport.internet.TransportConfig.protocol:type_name -> pysugar.wheels.transport.internet.TransportProtocol
-	7, // 1: pysugar.wheels.transport.internet.TransportConfig.settings:type_name -> pysugar.wheels.serial.TypedMessage
-	0, // 2: pysugar.wheels.transport.internet.StreamConfig.protocol:type_name -> pysugar.wheels.transport.internet.TransportProtocol
-	3, // 3: pysugar.wheels.transport.internet.StreamConfig.transport_settings:type_name -> pysugar.wheels.transport.internet.TransportConfig
-	7, // 4: pysugar.wheels.transport.internet.StreamConfig.security_settings:type_name -> pysugar.wheels.serial.TypedMessage
-	6, // 5: pysugar.wheels.transport.internet.StreamConfig.socket_settings:type_name -> pysugar.wheels.transport.internet.SocketConfig
-	2, // 6: pysugar.wheels.transport.internet.SocketConfig.tproxy:type_name -> pysugar.wheels.transport.internet.SocketConfig.TProxyMode
-	1, // 7: pysugar.wheels.transport.internet.SocketConfig.domain_strategy:type_name -> pysugar.wheels.transport.internet.DomainStrategy
+	0, // 0: pysugar.netool.transport.internet.TransportConfig.protocol:type_name -> pysugar.netool.transport.internet.TransportProtocol
+	7, // 1: pysugar.netool.transport.internet.TransportConfig.settings:type_name -> pysugar.netool.serial.TypedMessage
+	0, // 2: pysugar.netool.transport.internet.StreamConfig.protocol:type_name -> pysugar.netool.transport.internet.TransportProtocol
+	3, // 3: pysugar.netool.transport.internet.StreamConfig.transport_settings:type_name -> pysugar.netool.transport.internet.TransportConfig
+	7, // 4: pysugar.netool.transport.internet.StreamConfig.security_settings:type_name -> pysugar.netool.serial.TypedMessage
+	6, // 5: pysugar.netool.transport.internet.StreamConfig.socket_settings:type_name -> pysugar.netool.transport.internet.SocketConfig
+	2, // 6: pysugar.netool.transport.internet.SocketConfig.tproxy:type_name -> pysugar.netool.transport.internet.SocketConfig.TProxyMode
+	1, // 7: pysugar.netool.transport.internet.SocketConfig.domain_strategy:type_name -> pysugar.netool.transport.internet.DomainStrategy
 	8, // [8:8] is the sub-list for method output_type
 	8, // [8:8] is the sub-list for method input_type
 	8, // [8:8] is the sub-list for extension type_name
