@@ -15,6 +15,7 @@ import (
 
 	"github.com/jhump/protoreflect/desc/protoparse"
 	"github.com/pysugar/netool/cmd/base"
+	cliflags "github.com/pysugar/netool/cmd/internal/cli"
 	"github.com/pysugar/netool/http/client"
 	"github.com/pysugar/netool/http/extensions"
 	"github.com/spf13/cobra"
@@ -69,7 +70,7 @@ call grpc service: netool fetch --grpc https://localhost:8443/grpc.health.v1.Hea
 				return
 			}
 
-			isVerbose, _ := cmd.Flags().GetBool("verbose")
+			isVerbose := cliflags.Verbose(cmd)
 			isUpgrade, _ := cmd.Flags().GetBool("upgrade")
 			ctx, cancel := newContext(isVerbose, isUpgrade)
 			defer cancel()
@@ -144,7 +145,6 @@ func init() {
 	fetchCmd.Flags().BoolP("websocket", "W", false, "Is WebSocket Request Or Not")
 	fetchCmd.Flags().BoolP("ws", "", false, "Use gorilla client for websocket")
 	fetchCmd.Flags().BoolP("grpc", "G", false, "Is GRPC Request Or Not")
-	fetchCmd.Flags().BoolP("verbose", "V", false, "Verbose mode")
 	fetchCmd.Flags().BoolP("upgrade", "U", false, "try http upgrade")
 	fetchCmd.Flags().StringP("proto-path", "P", "", "Proto Path")
 	fetchCmd.Flags().BoolP("insecure", "i", false, "Skip server certificate and domain verification (skip TLS)")
@@ -152,7 +152,7 @@ func init() {
 }
 
 func wsCall(cmd *cobra.Command, targetURL *url.URL, isGorilla bool) error {
-	isVerbose, _ := cmd.Flags().GetBool("verbose")
+	isVerbose := cliflags.Verbose(cmd)
 	isInsecure, _ := cmd.Flags().GetBool("insecure")
 	ctx, cancel := newContext(isVerbose, true)
 	defer cancel()
@@ -185,7 +185,7 @@ func gRPCCall(cmd *cobra.Command, targetURL *url.URL) error {
 
 	requestJson, _ := cmd.Flags().GetString("data")
 	protoPath, _ := cmd.Flags().GetString("proto-path")
-	isVerbose, _ := cmd.Flags().GetBool("verbose")
+	isVerbose := cliflags.Verbose(cmd)
 	reqMessage, resMessage, err := getReqResMessages(protoPath, service, method, isVerbose)
 	if err != nil {
 		log.Printf("invalid proto file: %s, err: %v\n", protoPath, err)

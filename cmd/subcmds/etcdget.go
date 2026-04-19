@@ -1,34 +1,38 @@
 package subcmds
 
 import (
-	"context"
-	"fmt"
-	"github.com/pysugar/netool/cmd/base"
-	"github.com/spf13/cobra"
-	clientv3 "go.etcd.io/etcd/client/v3"
-	"log"
 	"strings"
 	"time"
+
+	"github.com/pysugar/netool/cmd/base"
+	"github.com/pysugar/netool/cmd/internal/cli"
+	"github.com/spf13/cobra"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 var etcdGetCmd = &cobra.Command{
-	Use:   `etcdget [--endpoints=127.0.0.1:2379] --key=key`,
-	Short: "Get etcd values according to give key",
+	Use:   "etcdget --key=KEY [--endpoints=127.0.0.1:2379]",
+	Short: "Get etcd values for a given key",
 	Long: `
-Get etcd values according to give key.
+Get etcd values for a given key.
+
+Examples:
+  netool etcdget --key=/live/myservice
+  netool etcdget --key=/live/ --prefix --endpoints=127.0.0.1:2379,127.0.0.1:2380
 `,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		endpoints, _ := cmd.Flags().GetString("endpoints")
 		client, err := clientv3.New(clientv3.Config{
 			Endpoints: strings.Split(endpoints, ","),
 		})
 		if err != nil {
-			log.Fatal(err)
-			return
+			return err
 		}
+		defer client.Close()
 
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		ctx, cancel := cli.RunContext(cmd, 30*time.Second)
 		defer cancel()
+
 		key, _ := cmd.Flags().GetString("key")
 		limit, _ := cmd.Flags().GetInt64("limit")
 		prefix, _ := cmd.Flags().GetBool("prefix")
@@ -39,21 +43,22 @@ Get etcd values according to give key.
 		}
 		resp, err := client.Get(ctx, key, options...)
 		if err != nil {
-			log.Fatal(err)
-			return
+			return err
 		}
 
+		out := cli.NewOutput(cmd)
 		for _, kv := range resp.Kvs {
-			fmt.Printf("%s : %s\n", kv.Key, string(kv.Value))
+			out.Text("%s : %s\n", kv.Key, string(kv.Value))
 		}
+		return nil
 	},
 }
 
 func init() {
-	etcdGetCmd.Flags().StringP("endpoints", "p", "127.0.0.1:2379", "etcd server address")
-	etcdGetCmd.Flags().StringP("key", "K", "", "search key")
-	etcdGetCmd.Flags().Int64P("limit", "L", 100, "WithLimit")
-	etcdGetCmd.Flags().BoolP("prefix", "P", false, "WithPrefix")
-	etcdGetCmd.Flags().BoolP("verbose", "V", false, "Verbose mode")
+	etcdGetCmd.Flags().String("endpoints", "127.0.0.1:2379", "etcd server addresses (comma-separated)")
+	etcdGetCmd.Flags().String("key", "", "search key")
+	etcdGetCmd.Flags().Int64("limit", 100, "max results")
+	etcdGetCmd.Flags().Bool("prefix", false, "treat key as prefix")
+	cli.AddTimeout(etcdGetCmd, 0)
 	base.AddSubCommands(etcdGetCmd)
 }

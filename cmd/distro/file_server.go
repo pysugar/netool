@@ -1,68 +1,73 @@
 package distro
 
 import (
+	"context"
 	"fmt"
-	"log"
+	"log/slog"
+	"net"
 	"net/http"
 	"path/filepath"
 
+	"github.com/pysugar/netool/cmd/base"
+	"github.com/pysugar/netool/cmd/internal/cli"
+	"github.com/pysugar/netool/http/extensions"
 	"github.com/pysugar/netool/net/ipaddr"
 	"github.com/spf13/cobra"
 )
 
 var fileServerCmd = &cobra.Command{
-	Use:   `fileserver [-d .] -p 8080`,
-	Short: "Start a File Server",
+	Use:   "fileserver [-d .] [-p 8080]",
+	Short: "Start a file server",
 	Long: `
-Start a File Server.
+Start a file server.
 
 Start file server: netool fileserver --dir=. --port=8088
 `,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		sharedDirectory, _ := cmd.Flags().GetString("dir")
 		port, _ := cmd.Flags().GetInt("port")
-		verbose, _ := cmd.Flags().GetBool("verbose")
-
-		RunFileServer(sharedDirectory, port, verbose)
+		return runFileServer(cmd.Context(), sharedDirectory, port, cli.Verbose(cmd))
 	},
 }
 
 func init() {
 	fileServerCmd.Flags().IntP("port", "p", 8080, "file server port")
 	fileServerCmd.Flags().StringP("dir", "d", ".", "file server directory")
-	fileServerCmd.Flags().BoolP("verbose", "V", false, "Verbose mode")
+	base.AddSubCommands(fileServerCmd)
 }
 
-func RunFileServer(sharedDirectory string, port int, verbose bool) {
-	absPath, err := filepath.Abs(sharedDirectory)
+func runFileServer(ctx context.Context, dir string, port int, verbose bool) error {
+	absPath, err := filepath.Abs(dir)
 	if err != nil {
-		fmt.Printf("%s is not exists: %v\n", sharedDirectory, err)
-		return
+		return fmt.Errorf("resolve %s: %w", dir, err)
 	}
 
-	fileServer := http.FileServer(http.Dir(absPath))
-
-	http.Handle("/", http.StripPrefix("/", noCacheMiddleware(fileServer)))
+	mux := http.NewServeMux()
+	handler := http.StripPrefix("/", extensions.NoCacheMiddleware(http.FileServer(http.Dir(absPath))))
+	mux.Handle("/", handler)
 
 	addrs, err := ipaddr.GetLocalIPv4Addrs(verbose)
 	if err != nil {
-		log.Printf("Failed to get local IPv4 addresses: %v\n", err)
+		slog.Warn("failed to enumerate local IPv4 addresses", "err", err)
 	}
 	if len(addrs) == 0 {
 		addrs = []string{"0.0.0.0"}
 	}
+	addr := fmt.Sprintf(":%d", port)
 
-	fmt.Printf("fileserver is running,\n\tdirectory:\t%s \n\taddress:\thttp://%s:%d\n", absPath, addrs[0], port)
-	if er := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); er != nil {
-		fmt.Printf("server start server: %s\n", er)
-	}
-}
+	srv := &http.Server{Addr: addr, Handler: mux}
 
-func noCacheMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-		w.Header().Set("Pragma", "no-cache")
-		w.Header().Set("Expires", "0")
-		next.ServeHTTP(w, r)
-	})
+	return cli.RunServer(ctx, "fileserver",
+		func(ctx context.Context) error {
+			ln, lerr := net.Listen("tcp", addr)
+			if lerr != nil {
+				return lerr
+			}
+			slog.Info("file server listening",
+				"directory", absPath,
+				"address", fmt.Sprintf("http://%s:%d", addrs[0], port))
+			return srv.Serve(ln)
+		},
+		srv.Shutdown,
+	)
 }

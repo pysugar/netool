@@ -2,52 +2,63 @@ package distro
 
 import (
 	"bufio"
+	"context"
+	"errors"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/pysugar/netool/cmd/base"
+	"github.com/pysugar/netool/cmd/internal/cli"
 	"github.com/spf13/cobra"
 )
 
 var httpProxyCmd = &cobra.Command{
-	Use:   `httpproxy -p 8080`,
-	Short: "Start a Transparent HTTP Proxy",
+	Use:   "httpproxy [-p 8080]",
+	Short: "Start a transparent HTTP proxy",
 	Long: `
-Start a Transparent HTTP Proxy.
+Start a transparent HTTP proxy (CONNECT tunnel + plain HTTP forward).
 
 Start a Transparent HTTP Proxy: netool httpproxy --port=8080
 `,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		port, _ := cmd.Flags().GetInt("port")
-
-		RunHTTPProxy(port)
+		return runHTTPProxy(cmd.Context(), port)
 	},
 }
 
 func init() {
-	httpProxyCmd.Flags().IntP("port", "p", 8080, "http proxy	 port")
+	httpProxyCmd.Flags().IntP("port", "p", 8080, "http proxy port")
+	base.AddSubCommands(httpProxyCmd)
 }
 
-func RunHTTPProxy(port int) {
+func runHTTPProxy(ctx context.Context, port int) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		log.Fatalf("Error starting listener: %v\n", err)
+		return fmt.Errorf("listen :%d: %w", port, err)
 	}
 
-	log.Println("Starting HTTP transparent proxy on ", lis.Addr())
-	for {
-		clientConn, er := lis.Accept()
-		if er != nil {
-			log.Printf("Failed to accept connection: %v\n", er)
-			continue
-		}
-
-		go handleHTTPProxy(clientConn)
-	}
+	return cli.RunServer(ctx, "httpproxy",
+		func(ctx context.Context) error {
+			slog.Info("http proxy listening", "addr", lis.Addr().String())
+			for {
+				clientConn, er := lis.Accept()
+				if er != nil {
+					if errors.Is(er, net.ErrClosed) {
+						return nil
+					}
+					slog.Warn("accept failed", "err", er)
+					continue
+				}
+				go handleHTTPProxy(clientConn)
+			}
+		},
+		func(_ context.Context) error { return lis.Close() },
+	)
 }
 
 func handleHTTPProxy(clientConn net.Conn) {
@@ -56,7 +67,7 @@ func handleHTTPProxy(clientConn net.Conn) {
 	reader := bufio.NewReader(clientConn)
 	request, err := http.ReadRequest(reader)
 	if err != nil {
-		log.Printf("Failed to read client request: %v", err)
+		slog.Debug("read client request failed", "err", err)
 		return
 	}
 
@@ -79,7 +90,7 @@ func handleConnectMethod(clientConn net.Conn, request *http.Request) {
 
 	targetConn, err := net.DialTimeout("tcp", targetHost, 10*time.Second)
 	if err != nil {
-		log.Printf("Failed to connect to target: %v\n", err)
+		slog.Warn("connect target failed", "target", targetHost, "err", err)
 		const errorHeaders = "\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n"
 		fmt.Fprintf(clientConn, "HTTP/1.1 503 Service Unavailable"+errorHeaders+err.Error())
 		return
@@ -87,18 +98,19 @@ func handleConnectMethod(clientConn net.Conn, request *http.Request) {
 	fmt.Fprintf(clientConn, "HTTP/1.1 200 Connection Established\r\n\r\n")
 	defer targetConn.Close()
 
-	log.Printf("Tunnel: %s -> (%s-%s) -> %s", clientConn.RemoteAddr(), clientConn.LocalAddr(),
-		targetConn.LocalAddr(), targetConn.RemoteAddr())
+	slog.Debug("tunnel",
+		"client", clientConn.RemoteAddr(),
+		"local", clientConn.LocalAddr(),
+		"target", targetConn.RemoteAddr())
 
 	go func() {
 		if _, er := io.Copy(targetConn, clientConn); er != nil {
-			log.Printf("Error copying from client to target: %v\n", er)
+			slog.Debug("copy client->target", "err", er)
 		}
 	}()
 
-	_, err = io.Copy(clientConn, targetConn)
-	if err != nil {
-		log.Printf("Error copying from target to client: %v\n", err)
+	if _, err := io.Copy(clientConn, targetConn); err != nil {
+		slog.Debug("copy target->client", "err", err)
 	}
 }
 
@@ -114,7 +126,7 @@ func handleHTTPRequest(clientConn net.Conn, request *http.Request) {
 
 	targetConn, err := net.DialTimeout("tcp", targetHost, 10*time.Second)
 	if err != nil {
-		log.Printf("Failed to connect to target: %v\n", err)
+		slog.Warn("connect target failed", "target", targetHost, "err", err)
 		const errorHeaders = "\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n"
 		fmt.Fprintf(clientConn, "HTTP/1.1 "+"503 Service Unavailable"+errorHeaders+err.Error())
 		return
@@ -122,24 +134,21 @@ func handleHTTPRequest(clientConn net.Conn, request *http.Request) {
 	defer targetConn.Close()
 
 	remoteAddr := clientConn.RemoteAddr()
-	log.Printf("RemoteAddr by proxyproto: %s\n", remoteAddr)
+	slog.Debug("proxy forward", "remote_addr", remoteAddr)
 
-	// 获取原始客户端 IP 地址
 	clientIP, _, err := net.SplitHostPort(remoteAddr.String())
 	if err != nil {
-		log.Printf("Failed to parse client IP from remoteAddr: %v", err)
+		slog.Debug("parse client ip", "err", err)
 		clientIP = "Unknown"
 	}
 
-	// 添加 X-Forwarded-For 头部
 	if prior, ok := request.Header["X-Forwarded-For"]; ok {
 		clientIP = strings.Join(prior, ", ") + ", " + clientIP
 	}
 	request.Header.Set("X-Forwarded-For", clientIP)
 
-	err = request.Write(targetConn)
-	if err != nil {
-		log.Printf("Failed to forward request to target: %v\n", err)
+	if err := request.Write(targetConn); err != nil {
+		slog.Warn("forward request failed", "err", err)
 		const errorHeaders = "\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n"
 		fmt.Fprintf(clientConn, "HTTP/1.1 "+"503 Service Unavailable"+errorHeaders+err.Error())
 		return
@@ -147,11 +156,11 @@ func handleHTTPRequest(clientConn net.Conn, request *http.Request) {
 
 	go func() {
 		if _, er := io.Copy(targetConn, clientConn); er != nil {
-			log.Printf("Error copying from client to target: %v\n", err)
+			slog.Debug("copy client->target", "err", er)
 		}
 	}()
 
-	if _, er := io.Copy(clientConn, targetConn); er != nil {
-		log.Printf("Error copying from target to client: %v\n", err)
+	if _, err := io.Copy(clientConn, targetConn); err != nil {
+		slog.Debug("copy target->client", "err", err)
 	}
 }

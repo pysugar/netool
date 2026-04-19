@@ -2,44 +2,51 @@ package distro
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
+	"github.com/pysugar/netool/cmd/base"
+	"github.com/pysugar/netool/cmd/internal/cli"
 	pb "github.com/pysugar/netool/grpc/proto"
 	"github.com/pysugar/netool/grpc/server"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 )
 
-type serverImp struct {
+type echoServer struct {
 	pb.UnimplementedEchoServiceServer
 }
 
-func (s *serverImp) Echo(ctx context.Context, req *pb.EchoRequest) (*pb.EchoResponse, error) {
-	log.Printf("Received message from client: %s", req.Message)
+func (s *echoServer) Echo(ctx context.Context, req *pb.EchoRequest) (*pb.EchoResponse, error) {
+	slog.Debug("echo", "message", req.Message)
 	return &pb.EchoResponse{Message: req.Message}, nil
 }
 
 var echoServiceCmd = &cobra.Command{
-	Use:   `echoservice -p 8080`,
+	Use:   "echoservice [-p 8080]",
 	Short: "Start a gRPC echo service",
 	Long: `
 Start a gRPC echo service.
 
 Start a gRPC echo service: netool echoservice --port=8080
 `,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		port, _ := cmd.Flags().GetInt("port")
-		//verbose, _ := cmd.Flags().GetBool("verbose")
-		err := server.StartGrpcServer(port, "echoservice", func(s *grpc.Server) {
-			pb.RegisterEchoServiceServer(s, &serverImp{})
+		grpcSrv := server.BuildServer("echoservice", func(s *grpc.Server) {
+			pb.RegisterEchoServiceServer(s, &echoServer{})
 		})
-		if err != nil {
-			log.Fatal(err.Error())
-		}
+		return cli.RunServer(cmd.Context(), "echoservice",
+			func(ctx context.Context) error {
+				return server.Serve(ctx, port, grpcSrv)
+			},
+			func(ctx context.Context) error {
+				grpcSrv.GracefulStop()
+				return nil
+			},
+		)
 	},
 }
 
 func init() {
-	echoServiceCmd.Flags().IntP("port", "p", 8080, "http proxy	 port")
-	echoServiceCmd.Flags().BoolP("verbose", "V", false, "Verbose mode")
+	echoServiceCmd.Flags().IntP("port", "p", 8080, "echo service port")
+	base.AddSubCommands(echoServiceCmd)
 }
