@@ -9,6 +9,7 @@ require (
 	github.com/pires/go-proxyproto v0.8.0
 	github.com/sagernet/sing v0.4.3
 	github.com/stretchr/testify v1.9.0
+	golang.org/x/crypto v0.26.0
 	golang.org/x/net v0.28.0
 	golang.org/x/sync v0.10.0
 	golang.org/x/sys v0.28.0
