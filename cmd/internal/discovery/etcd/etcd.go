@@ -22,7 +22,7 @@ func etcdInstancesToEndpoints(kvs []*mvccpb.KeyValue) []*Endpoint {
 	for _, kv := range kvs {
 		ep := new(Endpoint)
 		if err := ep.Decode(kv.Value); err != nil {
-			log.Printf("invalid endpoint info (), error: %v\n", string(kv.Value), err)
+			log.Printf("invalid endpoint info (%s), error: %v\n", string(kv.Value), err)
 			continue
 		}
 		endpoints = append(endpoints, ep)

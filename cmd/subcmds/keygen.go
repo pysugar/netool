@@ -17,6 +17,10 @@ Generate asymmetric key pairs for protocols that consume Curve25519:
   netool keygen x25519 -e     # base64.StdEncoding
   netool keygen wg            # WireGuard (base64.StdEncoding)
 `,
+	Args: cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return cmd.Help()
+	},
 }
 
 var x25519Cmd = &cobra.Command{
