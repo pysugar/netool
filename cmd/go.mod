@@ -1,17 +1,17 @@
-module github.com/pysugar/wheels/cmd
+module github.com/pysugar/netool/cmd
 
 go 1.21
 
 replace (
-	github.com/pysugar/wheels => ../
-	github.com/pysugar/wheels/examples => ../examples
+	github.com/pysugar/netool => ../
+	github.com/pysugar/netool/examples => ../examples
 )
 
 require (
 	github.com/golang/protobuf v1.5.4
 	github.com/jhump/protoreflect v1.17.0
-	github.com/pysugar/wheels v0.0.0-00010101000000-000000000000
-	github.com/pysugar/wheels/examples v0.0.0-00010101000000-000000000000
+	github.com/pysugar/netool v0.0.0-00010101000000-000000000000
+	github.com/pysugar/netool/examples v0.0.0-00010101000000-000000000000
 	github.com/spf13/cobra v1.8.1
 	go.etcd.io/etcd/api/v3 v3.5.13
 	go.etcd.io/etcd/client/v3 v3.5.13

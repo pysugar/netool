@@ -1,4 +1,4 @@
-module github.com/pysugar/wheels/pkg/ws
+module github.com/pysugar/netool/pkg/ws
 
 go 1.21
 

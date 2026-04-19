@@ -1,14 +1,14 @@
-module github.com/pysugar/wheels/snippets/httproto
+module github.com/pysugar/netool/snippets/httproto
 
 go 1.21
 
-replace github.com/pysugar/wheels => ../../
+replace github.com/pysugar/netool => ../../
 
 require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/prometheus/client_golang v1.20.5
-	github.com/pysugar/wheels v0.0.0-00010101000000-000000000000
+	github.com/pysugar/netool v0.0.0-00010101000000-000000000000
 	golang.org/x/net v0.31.0
 	google.golang.org/grpc v1.67.1
 )

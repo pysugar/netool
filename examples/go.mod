@@ -1,11 +1,11 @@
-module github.com/pysugar/wheels/examples
+module github.com/pysugar/netool/examples
 
 go 1.21
 
-replace github.com/pysugar/wheels => ../
+replace github.com/pysugar/netool => ../
 
 require (
-	github.com/pysugar/wheels v0.0.0-00010101000000-000000000000
+	github.com/pysugar/netool v0.0.0-00010101000000-000000000000
 	google.golang.org/protobuf v1.35.1
 )
 

@@ -1,4 +1,4 @@
-module github.com/pysugar/wheels/snippets/soundness
+module github.com/pysugar/netool/snippets/soundness
 
 go 1.21
 

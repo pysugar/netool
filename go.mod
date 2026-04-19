@@ -1,4 +1,4 @@
-module github.com/pysugar/wheels
+module github.com/pysugar/netool
 
 go 1.21
 
