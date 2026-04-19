@@ -4,110 +4,75 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 	"time"
 
 	"github.com/pysugar/netool/binproto/grpc/codec"
 	"github.com/pysugar/netool/cmd/base"
+	"github.com/pysugar/netool/cmd/internal/cli"
+	grpcrefl "github.com/pysugar/netool/cmd/internal/grpcrefl"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
-	reflectionpb "google.golang.org/grpc/reflection/grpc_reflection_v1"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/reflect/protodesc"
-	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/reflect/protoregistry"
-	"google.golang.org/protobuf/types/descriptorpb"
-	"google.golang.org/protobuf/types/dynamicpb"
-
-	_ "google.golang.org/protobuf/types/known/anypb"
-	_ "google.golang.org/protobuf/types/known/durationpb"
-	_ "google.golang.org/protobuf/types/known/timestamppb"
-	_ "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 const contextPathKey = "contextPath"
 
-var (
-	grpcCmd = &cobra.Command{
-		Use:   `grpc -d '{}' 127.0.0.1:50051 grpc.health.v1.Health/Check`,
-		Short: "call grpc service",
-		Long: `
-call grpc service
+var grpcCmd = &cobra.Command{
+	Use:   "grpc TARGET SERVICE/METHOD [flags]",
+	Short: "Call a gRPC service (JSON in, JSON out)",
+	Long: `
+Call a gRPC service.
 
 Send an empty request:                     netool grpc grpc.server.com:443 my.custom.server.Service/Method
-Send a request with a header and a body:   netool grpc -H "Authorization: Bearer $token" -d '{"foo": "bar"}' grpc.server.com:443 my.custom.server.Service/Method
+Send a request with a header and a body:   netool grpc -H "Authorization: Bearer $token" -d '{"foo":"bar"}' grpc.server.com:443 my.custom.server.Service/Method
 List all services exposed by a server:     netool grpc grpc.server.com:443 list
 List all methods in a particular service:  netool grpc grpc.server.com:443 list my.custom.server.Service
 `,
-		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) < 2 {
-				log.Printf("you must specify the url and operation")
-				return
-			}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 2 {
+			return fmt.Errorf("usage: netool grpc TARGET SERVICE/METHOD")
+		}
 
-			plaintextMode, _ := cmd.Flags().GetBool("plaintext")
-			insecureMode, _ := cmd.Flags().GetBool("insecure")
+		plaintextMode, _ := cmd.Flags().GetBool("plaintext")
+		insecureMode, _ := cmd.Flags().GetBool("insecure")
 
-			cred := insecure.NewCredentials()
-			if !plaintextMode && insecureMode {
-				cred = credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})
-			}
+		cred := insecure.NewCredentials()
+		if !plaintextMode && insecureMode {
+			cred = credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})
+		}
 
-			target := args[0]
-			op := args[1]
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-			contextPath, _ := cmd.Flags().GetString("context-path")
-			if contextPath != "" {
-				ctx = context.WithValue(ctx, contextPathKey, contextPath)
-			}
-			headers, _ := cmd.Flags().GetStringArray("header")
+		target := args[0]
+		op := args[1]
 
-			md := make(map[string]string)
-			for _, header := range headers {
-				parts := strings.SplitN(header, ":", 2)
-				if len(parts) != 2 {
-					log.Printf("invalid header format: %s\n", header)
-					continue
-				}
-				key := strings.TrimSpace(parts[0])
-				value := strings.TrimSpace(parts[1])
-				md[strings.ToLower(key)] = value
-			}
-			mdPairs := []string{}
-			for key, value := range md {
-				mdPairs = append(mdPairs, key, value)
-			}
-			mdContext := metadata.Pairs(mdPairs...)
-			ctx = metadata.NewOutgoingContext(ctx, mdContext)
+		ctx, cancel := cli.RunContext(cmd, 10*time.Second)
+		defer cancel()
 
-			if strings.EqualFold(op, "list") {
-				if len(args) > 2 {
-					serviceName := args[2]
-					if err := listDescriptors(ctx, target, serviceName, grpc.WithTransportCredentials(cred)); err != nil {
-						log.Printf("List descriptors error: %v\n", err)
-					}
-				} else {
-					if err := listServices(ctx, target, grpc.WithTransportCredentials(cred)); err != nil {
-						log.Printf("List services error: %v\n", err)
-					}
-				}
-			} else {
-				data, _ := cmd.Flags().GetString("data")
-				if err := makeGenericGrpcCall(ctx, target, op, []byte(data), grpc.WithTransportCredentials(cred)); err != nil {
-					log.Printf("make generic grpc call error: %v\n", err)
-				}
-			}
-		},
-	}
-)
+		contextPath, _ := cmd.Flags().GetString("context-path")
+		if contextPath != "" {
+			ctx = context.WithValue(ctx, contextPathKey, contextPath)
+		}
+		headers, _ := cmd.Flags().GetStringArray("header")
+		ctx = metadata.NewOutgoingContext(ctx, parseMetadata(headers))
+
+		opts := []grpc.DialOption{grpc.WithTransportCredentials(cred)}
+
+		switch {
+		case strings.EqualFold(op, "list") && len(args) > 2:
+			return listServiceSymbols(ctx, target, args[2], opts...)
+		case strings.EqualFold(op, "list"):
+			return listServerServices(cmd, ctx, target, opts...)
+		default:
+			data, _ := cmd.Flags().GetString("data")
+			return invokeByReflection(cmd, ctx, target, op, []byte(data), opts...)
+		}
+	},
+}
 
 func init() {
 	grpcCmd.Flags().BoolP("plaintext", "p", false, "Use plain-text HTTP/2 when connecting to server (no TLS)")
@@ -118,216 +83,67 @@ func init() {
 	base.AddSubCommands(grpcCmd)
 }
 
-func listDescriptors(ctx context.Context, target, serviceName string, opts ...grpc.DialOption) error {
+func parseMetadata(headers []string) metadata.MD {
+	md := metadata.MD{}
+	for _, h := range headers {
+		parts := strings.SplitN(h, ":", 2)
+		if len(parts) != 2 {
+			slog.Warn("invalid header format", "header", h)
+			continue
+		}
+		md.Append(strings.ToLower(strings.TrimSpace(parts[0])), strings.TrimSpace(parts[1]))
+	}
+	return md
+}
+
+func listServerServices(cmd *cobra.Command, ctx context.Context, target string, opts ...grpc.DialOption) error {
 	conn, err := grpc.NewClient(target, opts...)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	clientStream, err := newReflectionClient(ctx, conn, opts...)
+	services, err := grpcrefl.ListServices(ctx, conn)
 	if err != nil {
 		return err
 	}
-
-	doneCh := make(chan struct{})
-	go func() {
-		defer close(doneCh)
-		for {
-			resp, er := clientStream.Recv()
-			if er != nil {
-				log.Printf("Failed to receive service reflection response: %v", er)
-				return
-			}
-
-			if errResp := resp.GetErrorResponse(); errResp != nil {
-				log.Printf("Failed to receive service reflection response: %v", errResp)
-				continue
-			}
-
-			fileDescriptorResp := resp.GetFileDescriptorResponse()
-			if fileDescriptorResp == nil {
-				continue
-			}
-
-			for i, fdBytes := range fileDescriptorResp.FileDescriptorProto {
-				fdProto := &descriptorpb.FileDescriptorProto{}
-				if e := proto.Unmarshal(fdBytes, fdProto); e != nil {
-					log.Printf("[%d] failed to unmarshal FileDescriptorProto: %v\n", i, e)
-					continue
-				}
-
-				protoregistry.GlobalTypes.RangeMessages(func(mt protoreflect.MessageType) bool {
-					log.Printf("GlobalType: %v\n", mt.Descriptor().FullName())
-					return true
-				})
-
-				for _, dep := range fdProto.GetDependency() {
-					log.Printf("Dependency: %s\n", dep)
-				}
-
-				fileDesc, e := protodesc.NewFile(fdProto, protoregistry.GlobalFiles)
-				if e != nil {
-					log.Printf("[%d] failed to create FileDescriptor from %v: %v\n", i, fdProto, e)
-					return
-				}
-
-				for j := 0; j < fileDesc.Services().Len(); j++ {
-					srv := fileDesc.Services().Get(j)
-					log.Printf("[%d] %s\n", i, srv.FullName())
-					for k := 0; k < srv.Methods().Len(); k++ {
-						mth := srv.Methods().Get(k)
-						log.Printf("[%d]\t %s\n", i, mth.FullName())
-						log.Printf("[%d]\t\t %v\n", i, mth.Input().FullName())
-						log.Printf("[%d]\t\t %v\n", i, mth.Output().FullName())
-						log.Printf("[%d]\t\t stream client: %v\n", i, mth.IsStreamingClient())
-						log.Printf("[%d]\t\t stream server: %v\n", i, mth.IsStreamingServer())
-					}
-				}
-			}
-			return
-		}
-	}()
-
-	if er := clientStream.Send(&reflectionpb.ServerReflectionRequest{
-		MessageRequest: &reflectionpb.ServerReflectionRequest_FileContainingSymbol{
-			FileContainingSymbol: serviceName,
-		},
-	}); er != nil {
-		return fmt.Errorf("failed to send reflection request for service: %v", er)
+	out := cli.NewOutput(cmd)
+	if out.Format() == cli.FormatJSON {
+		return out.JSON(map[string]any{"services": services})
 	}
-
-	<-doneCh
+	for _, s := range services {
+		out.Text("%s\n", s)
+	}
 	return nil
 }
 
-func listServices(ctx context.Context, target string, opts ...grpc.DialOption) error {
+func listServiceSymbols(ctx context.Context, target, serviceName string, opts ...grpc.DialOption) error {
 	conn, err := grpc.NewClient(target, opts...)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	clientStream, err := newReflectionClient(ctx, conn, opts...)
+	fds, err := grpcrefl.FileDescriptorsForSymbol(ctx, conn, serviceName)
 	if err != nil {
 		return err
 	}
-
-	doneCh := make(chan struct{})
-	go func() {
-		defer close(doneCh)
-		for {
-			resp, er := clientStream.Recv()
-			if er != nil {
-				log.Printf("Failed to receive service reflection response: %v", er)
-				return
+	for _, fd := range fds {
+		for i := 0; i < fd.Services().Len(); i++ {
+			srv := fd.Services().Get(i)
+			fmt.Printf("%s\n", srv.FullName())
+			for j := 0; j < srv.Methods().Len(); j++ {
+				m := srv.Methods().Get(j)
+				fmt.Printf("\t%s(%s) returns (%s) stream_client=%v stream_server=%v\n",
+					m.Name(), m.Input().FullName(), m.Output().FullName(),
+					m.IsStreamingClient(), m.IsStreamingServer())
 			}
-
-			if errResp := resp.GetErrorResponse(); errResp != nil {
-				log.Printf("Failed to receive service reflection response: %v", errResp)
-				continue
-			}
-
-			listServicesResp := resp.GetListServicesResponse()
-			if listServicesResp == nil {
-				continue
-			}
-
-			for _, srv := range listServicesResp.GetService() {
-				log.Printf("Discovered service: %v\n", srv.GetName())
-			}
-			return
 		}
-	}()
-
-	if er := clientStream.Send(&reflectionpb.ServerReflectionRequest{
-		MessageRequest: &reflectionpb.ServerReflectionRequest_ListServices{
-			ListServices: "*",
-		},
-	}); er != nil {
-		return fmt.Errorf("failed to send reflection request for service: %v", err)
 	}
-
-	<-doneCh
 	return nil
 }
 
-func findMethodDescriptor(ctx context.Context, conn *grpc.ClientConn, serviceName, methodName string) (protoreflect.MethodDescriptor, error) {
-	reflectionClient := reflectionpb.NewServerReflectionClient(conn)
-	clientStream, err := reflectionClient.ServerReflectionInfo(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	doneCh := make(chan any)
-	go func() {
-		defer close(doneCh)
-		for {
-			resp, er := clientStream.Recv()
-			if er != nil {
-				log.Printf("Failed to receive service reflection response: %v", er)
-				doneCh <- er
-				return
-			}
-
-			if errResp := resp.GetErrorResponse(); errResp != nil {
-				log.Printf("Failed to receive service reflection response: %v", errResp)
-				doneCh <- fmt.Errorf("code: %d, message: %s", errResp.ErrorCode, errResp.ErrorMessage)
-				return
-			}
-
-			descResp := resp.GetFileDescriptorResponse()
-			descResp.GetFileDescriptorProto()
-
-			for _, fdBytes := range descResp.FileDescriptorProto {
-				fdProto := &descriptorpb.FileDescriptorProto{}
-				if e := proto.Unmarshal(fdBytes, fdProto); e != nil {
-					log.Printf("failed to unmarshal FileDescriptorProto: %v", er)
-					continue
-				}
-
-				fileDesc, e := protodesc.NewFile(fdProto, protoregistry.GlobalFiles)
-				if e != nil {
-					log.Printf("failed to create FileDescriptor: %v", e)
-					return
-				}
-
-				for j := 0; j < fileDesc.Services().Len(); j++ {
-					srv := fileDesc.Services().Get(j)
-					if strings.EqualFold(string(srv.FullName()), serviceName) {
-						for k := 0; k < srv.Methods().Len(); k++ {
-							mth := srv.Methods().Get(k)
-							if strings.EqualFold(string(mth.Name()), methodName) {
-								doneCh <- mth
-							}
-						}
-						doneCh <- fmt.Errorf("method %s not found in service %s", methodName, serviceName)
-					}
-				}
-			}
-		}
-	}()
-
-	if er := clientStream.Send(&reflectionpb.ServerReflectionRequest{
-		MessageRequest: &reflectionpb.ServerReflectionRequest_FileContainingSymbol{
-			FileContainingSymbol: serviceName,
-		},
-	}); er != nil {
-		return nil, fmt.Errorf("failed to send reflection request for service: %v", er)
-	}
-
-	if v, ok := <-doneCh; ok {
-		if er, has := v.(error); has {
-			return nil, er
-		} else if md, suc := v.(protoreflect.MethodDescriptor); suc {
-			return md, nil
-		}
-		return nil, fmt.Errorf("unexpected error: %v", v)
-	}
-	return nil, fmt.Errorf("unexpected error")
-}
-
-func makeGenericGrpcCall(ctx context.Context, target, fullMethod string, jsonData []byte, opts ...grpc.DialOption) error {
+func invokeByReflection(cmd *cobra.Command, ctx context.Context, target, fullMethod string, jsonData []byte, opts ...grpc.DialOption) error {
 	if contextPath, ok := ctx.Value(contextPathKey).(string); ok {
 		opts = append(
 			opts,
@@ -342,83 +158,55 @@ func makeGenericGrpcCall(ctx context.Context, target, fullMethod string, jsonDat
 	}
 	defer conn.Close()
 
-	serviceName, methodName, err := parseMethod(fullMethod)
+	service, method, err := grpcrefl.ParseFullMethod(fullMethod)
 	if err != nil {
 		return err
 	}
 
-	methodDesc, err := findMethodDescriptor(ctx, conn, serviceName, methodName)
+	methodDesc, err := grpcrefl.LoadViaReflection(ctx, conn, service, method)
 	if err != nil {
 		st, ok := status.FromError(err)
-		if !ok {
+		if !ok || st.Code() != codes.Unimplemented {
+			// Fall through to the untyped JSON frame path when reflection
+			// is unavailable or the symbol is unknown.
+			if !ok {
+				slog.Warn("reflection unavailable, using JSON frame codec", "err", err)
+			}
+			methodDesc = nil
+		} else {
 			return err
 		}
-
-		if st.Code() != codes.Unimplemented {
-			return err
-		}
-	}
-
-	if len(jsonData) == 0 {
-		jsonData = []byte("{}")
 	}
 
 	if methodDesc != nil {
-		inputDesc := methodDesc.Input()
-		reqMessage := dynamicpb.NewMessage(inputDesc)
-		err = protojson.Unmarshal(jsonData, reqMessage)
-		if err != nil {
-			return fmt.Errorf("failed to parse JSON to Protobuf: %v", err)
-		}
-
-		outputDesc := methodDesc.Output()
-		resMessage := dynamicpb.NewMessage(outputDesc)
-
-		rpcMethod := fmt.Sprintf("/%s/%s", serviceName, methodName)
-		err = conn.Invoke(ctx, rpcMethod, reqMessage, resMessage)
-		if err != nil {
-			return fmt.Errorf("gRPC call failed: %v", err)
-		}
-
-		responseJson, er := protojson.Marshal(resMessage)
+		resp, er := grpcrefl.InvokeJSON(ctx, conn, methodDesc, jsonData)
 		if er != nil {
-			return fmt.Errorf("failed to serialize response to JSON: %v", er)
+			return er
 		}
-		log.Printf("Response: %s", responseJson)
-	} else {
-		request := &codec.JsonFrame{RawData: jsonData}
-		response := &codec.JsonFrame{}
-		jsonOpts := []grpc.CallOption{
-			grpc.ForceCodec(&codec.JsonFrame{}),
-			grpc.CallContentSubtype("json"),
-		}
-		rpcMethod := fmt.Sprintf("/%s/%s", serviceName, methodName)
-		err = conn.Invoke(ctx, rpcMethod, request, response, jsonOpts...)
-		if err != nil {
-			return fmt.Errorf("gRPC call failed: %v", err)
-		}
-		log.Printf("Response: %s", response.RawData)
+		out := cli.NewOutput(cmd)
+		out.Text("%s\n", resp)
+		return nil
 	}
+
+	return invokeJSONFrame(ctx, conn, service, method, jsonData)
+}
+
+func invokeJSONFrame(ctx context.Context, conn *grpc.ClientConn, service, method string, jsonData []byte) error {
+	if len(jsonData) == 0 {
+		jsonData = []byte("{}")
+	}
+	request := &codec.JsonFrame{RawData: jsonData}
+	response := &codec.JsonFrame{}
+	callOpts := []grpc.CallOption{
+		grpc.ForceCodec(&codec.JsonFrame{}),
+		grpc.CallContentSubtype("json"),
+	}
+	rpc := fmt.Sprintf("/%s/%s", service, method)
+	if err := conn.Invoke(ctx, rpc, request, response, callOpts...); err != nil {
+		return fmt.Errorf("grpc call %s: %w", rpc, err)
+	}
+	fmt.Printf("%s\n", response.RawData)
 	return nil
-}
-
-func parseMethod(fullMethodName string) (string, string, error) {
-	parts := strings.Split(fullMethodName, "/")
-	if len(parts) != 2 {
-		return "", "", fmt.Errorf("invalid method format: %s", fullMethodName)
-	}
-	serviceName := parts[0]
-	methodName := parts[1]
-	return serviceName, methodName, nil
-}
-
-func newReflectionClient(ctx context.Context, conn *grpc.ClientConn, opts ...grpc.DialOption) (grpc.BidiStreamingClient[reflectionpb.ServerReflectionRequest, reflectionpb.ServerReflectionResponse], error) {
-	reflectionClient := reflectionpb.NewServerReflectionClient(conn)
-	clientStream, err := reflectionClient.ServerReflectionInfo(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return clientStream, nil
 }
 
 func contextPathStreamInterceptor(contextPath string) grpc.StreamClientInterceptor {
@@ -430,14 +218,9 @@ func contextPathStreamInterceptor(contextPath string) grpc.StreamClientIntercept
 		streamer grpc.Streamer,
 		opts ...grpc.CallOption,
 	) (grpc.ClientStream, error) {
-		spliter := "/"
-		if strings.HasPrefix(method, spliter) {
-			spliter = ""
-		}
-
-		modifiedMethod := "/" + contextPath + spliter + method
-		log.Printf("contextPathUnaryInterceptor called: %s -> %s\n", method, modifiedMethod)
-		return streamer(ctx, desc, cc, modifiedMethod, opts...)
+		modified := prefixMethod(contextPath, method)
+		slog.Debug("grpc stream method rewrite", "from", method, "to", modified)
+		return streamer(ctx, desc, cc, modified, opts...)
 	}
 }
 
@@ -445,18 +228,21 @@ func contextPathUnaryInterceptor(contextPath string) grpc.UnaryClientInterceptor
 	return func(
 		ctx context.Context,
 		method string,
-		req interface{},
-		reply interface{},
+		req, reply any,
 		cc *grpc.ClientConn,
 		invoker grpc.UnaryInvoker,
 		opts ...grpc.CallOption,
 	) error {
-		spliter := "/"
-		if strings.HasPrefix(method, spliter) {
-			spliter = ""
-		}
-		modifiedMethod := "/" + contextPath + spliter + method
-		log.Printf("contextPathUnaryInterceptor called: %s -> %s\n", method, modifiedMethod)
-		return invoker(ctx, modifiedMethod, req, reply, cc, opts...)
+		modified := prefixMethod(contextPath, method)
+		slog.Debug("grpc unary method rewrite", "from", method, "to", modified)
+		return invoker(ctx, modified, req, reply, cc, opts...)
 	}
+}
+
+func prefixMethod(contextPath, method string) string {
+	sep := "/"
+	if strings.HasPrefix(method, "/") {
+		sep = ""
+	}
+	return "/" + contextPath + sep + method
 }

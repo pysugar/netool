@@ -8,20 +8,17 @@ import (
 	"net/http"
 	"net/http/httptrace"
 	"net/url"
-	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"time"
 
-	"github.com/jhump/protoreflect/desc/protoparse"
 	"github.com/pysugar/netool/cmd/base"
 	cliflags "github.com/pysugar/netool/cmd/internal/cli"
+	grpcrefl "github.com/pysugar/netool/cmd/internal/grpcrefl"
 	"github.com/pysugar/netool/http/client"
 	"github.com/pysugar/netool/http/extensions"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/dynamicpb"
 )
 
@@ -177,25 +174,25 @@ func wsCall(cmd *cobra.Command, targetURL *url.URL, isGorilla bool) error {
 }
 
 func gRPCCall(cmd *cobra.Command, targetURL *url.URL) error {
-	service, method, err := extractServiceAndMethod(targetURL)
+	service, method, err := grpcrefl.ParseURLPath(targetURL)
 	if err != nil {
-		log.Printf("invalid service or method %v\n", err)
-		return err
+		return fmt.Errorf("invalid service or method: %w", err)
 	}
 
 	requestJson, _ := cmd.Flags().GetString("data")
 	protoPath, _ := cmd.Flags().GetString("proto-path")
 	isVerbose := cliflags.Verbose(cmd)
-	reqMessage, resMessage, err := getReqResMessages(protoPath, service, method, isVerbose)
+
+	methodDesc, err := grpcrefl.LoadFromProtoFile(protoPath, service, method)
 	if err != nil {
-		log.Printf("invalid proto file: %s, err: %v\n", protoPath, err)
 		return err
 	}
 
-	err = protojson.Unmarshal([]byte(requestJson), reqMessage)
-	if err != nil {
-		fmt.Printf("failed to parse JSON to Protobuf: %v", err)
-		return err
+	reqMessage := dynamicpb.NewMessage(methodDesc.Input())
+	resMessage := dynamicpb.NewMessage(methodDesc.Output())
+
+	if err := protojson.Unmarshal([]byte(requestJson), reqMessage); err != nil {
+		return fmt.Errorf("parse request JSON: %w", err)
 	}
 
 	isUpgrade, _ := cmd.Flags().GetBool("upgrade")
@@ -203,15 +200,13 @@ func gRPCCall(cmd *cobra.Command, targetURL *url.URL) error {
 	defer cancel()
 
 	ctx = client.WithProtocol(ctx, client.HTTP2)
-	if er := client.NewFetcher().CallGRPC(ctx, targetURL, reqMessage, resMessage); er != nil {
-		log.Printf("Call grpc %s error: %v\n", targetURL, er)
-		return err
+	if err := client.NewFetcher().CallGRPC(ctx, targetURL, reqMessage, resMessage); err != nil {
+		return fmt.Errorf("call grpc %s: %w", targetURL, err)
 	}
 
 	responseJson, err := protojson.Marshal(resMessage)
 	if err != nil {
-		fmt.Printf("failed to serialize response to JSON: %v", err)
-		return err
+		return fmt.Errorf("serialize response JSON: %w", err)
 	}
 	fmt.Printf("%s\n", responseJson)
 	return nil
@@ -230,90 +225,3 @@ func newContext(isVerbose, isUpgrade bool) (context.Context, context.CancelFunc)
 	return ctx, cancel
 }
 
-func extractServiceAndMethod(parsedURL *url.URL) (string, string, error) {
-	path := strings.Trim(parsedURL.Path, "/")
-
-	segments := strings.Split(path, "/")
-
-	if len(segments) < 2 {
-		return "", "", fmt.Errorf("missing servie or method")
-	}
-
-	service := segments[len(segments)-2]
-	method := segments[len(segments)-1]
-
-	return service, method, nil
-}
-
-func getReqResMessages(protoPath, serviceName, methodName string, verbose bool) (proto.Message, proto.Message, error) {
-	parser := protoparse.Parser{
-		ImportPaths: []string{filepath.Dir(protoPath)},
-	}
-
-	fileDescriptors, err := parser.ParseFiles(filepath.Base(protoPath))
-	if err != nil {
-		return nil, nil, fmt.Errorf("resolve proto file failure: %v", err)
-	}
-
-	if verbose {
-		fmt.Printf("dir: %+v\n", filepath.Dir(protoPath))
-		fmt.Printf("base: %+v\n", filepath.Base(protoPath))
-		for _, fd := range fileDescriptors {
-			fmt.Printf("fd: %v\n", fd)
-		}
-	}
-
-	if len(fileDescriptors) == 0 {
-		return nil, nil, fmt.Errorf("file descriptor not found")
-	}
-
-	descriptor := fileDescriptors[0]
-	srvDesc := descriptor.FindService(serviceName)
-	if srvDesc == nil {
-		showServices(descriptor.UnwrapFile())
-		return nil, nil, fmt.Errorf("service not found: %s", serviceName)
-	}
-
-	method := srvDesc.FindMethodByName(methodName)
-	if method == nil {
-		fmt.Println(serviceInfo(srvDesc.UnwrapService()))
-		return nil, nil, fmt.Errorf("method not found: %s in service: %s", methodName, serviceName)
-	}
-
-	inputDesc := method.GetInputType()
-	outputDesc := method.GetOutputType()
-
-	if inputDesc == nil || outputDesc == nil {
-		return nil, nil, fmt.Errorf("input or output is empty")
-	}
-
-	reqMessage := dynamicpb.NewMessage(inputDesc.UnwrapMessage())
-	resMessage := dynamicpb.NewMessage(outputDesc.UnwrapMessage())
-
-	return reqMessage, resMessage, nil
-}
-
-func showServices(fd protoreflect.FileDescriptor) {
-	for i := 0; i < fd.Services().Len(); i++ {
-		fmt.Println(serviceInfo(fd.Services().Get(i)))
-	}
-}
-
-func serviceInfo(srvDesc protoreflect.ServiceDescriptor) string {
-	var out strings.Builder
-	out.WriteString("service: ")
-	out.WriteString(string(srvDesc.Name()))
-	out.WriteString("(")
-	out.WriteString(string(srvDesc.FullName()))
-	out.WriteString(")")
-	out.WriteString("\n")
-	for k := 0; k < srvDesc.Methods().Len(); k++ {
-		mth := srvDesc.Methods().Get(k)
-		out.WriteString("\t")
-		out.WriteString(string(mth.Name()))
-		out.WriteString("(")
-		out.WriteString(string(mth.FullName()))
-		out.WriteString(")\n")
-	}
-	return out.String()
-}
