@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/pysugar/netool/cmd/base"
+	"github.com/pysugar/netool/cmd/internal/cli"
 	"github.com/spf13/cobra"
 )
 
@@ -28,8 +29,7 @@ Decode a raw protobuf binary file (no schema required).
 		if err != nil {
 			return fmt.Errorf("read file %s: %w", filename, err)
 		}
-		ParseProtobuf(data)
-		return nil
+		return ParseProtobufTo(cli.NewOutput(cmd).Writer(), data)
 	},
 }
 
@@ -48,60 +48,60 @@ const (
 	Fixed32         = 5
 )
 
+// ParseProtobuf decodes raw protobuf wire-format bytes to os.Stdout.
+// Kept for backwards compatibility with tests; new callers should prefer
+// ParseProtobufTo so output is testable and routable.
 func ParseProtobuf(data []byte) {
+	_ = ParseProtobufTo(os.Stdout, data)
+}
+
+// ParseProtobufTo decodes raw protobuf wire-format bytes to w.
+func ParseProtobufTo(w io.Writer, data []byte) error {
 	reader := bytes.NewReader(data)
 
 	for {
 		key, err := readVarint(reader)
 		if err == io.EOF {
-			break
+			return nil
 		} else if err != nil {
-			fmt.Printf("Error reading key: %v\n", err)
-			break
+			return fmt.Errorf("read key: %w", err)
 		}
 
 		fieldNumber := key >> 3
 		wireType := key & 0x7
-
-		fmt.Printf("Field Number: %d, Wire Type: %d\n", fieldNumber, wireType)
+		fmt.Fprintf(w, "Field Number: %d, Wire Type: %d\n", fieldNumber, wireType)
 
 		switch wireType {
 		case Varint:
-			if value, er := readVarint(reader); er != nil {
-				fmt.Printf("Error reading varint value: %v\n", er)
-				return
-			} else {
-				fmt.Printf("Varint Value: %d\n", value)
+			value, er := readVarint(reader)
+			if er != nil {
+				return fmt.Errorf("read varint value: %w", er)
 			}
+			fmt.Fprintf(w, "Varint Value: %d\n", value)
 		case Fixed64:
 			var value uint64
 			if er := binary.Read(reader, binary.LittleEndian, &value); er != nil {
-				fmt.Printf("Error reading fixed64 value: %v\n", er)
-				return
+				return fmt.Errorf("read fixed64 value: %w", er)
 			}
-			fmt.Printf("Fixed64 Value: %d\n", value)
+			fmt.Fprintf(w, "Fixed64 Value: %d\n", value)
 		case LengthDelimited:
 			length, er := readVarint(reader)
 			if er != nil {
-				fmt.Printf("Error reading length: %v\n", er)
-				return
+				return fmt.Errorf("read length: %w", er)
 			}
 			value := make([]byte, length)
 			if _, er2 := io.ReadFull(reader, value); er2 != nil {
-				fmt.Printf("Error reading length-delimited value: %v\n", er2)
-				return
+				return fmt.Errorf("read length-delimited value: %w", er2)
 			}
-			fmt.Printf("Length-delimited %d Value: %s\n", length, value)
+			fmt.Fprintf(w, "Length-delimited %d Value: %s\n", length, value)
 		case Fixed32:
 			var value uint32
 			if er := binary.Read(reader, binary.LittleEndian, &value); er != nil {
-				fmt.Printf("Error reading fixed32 value: %v\n", er)
-				return
+				return fmt.Errorf("read fixed32 value: %w", er)
 			}
-			fmt.Printf("Fixed32 Value: %d\n", value)
+			fmt.Fprintf(w, "Fixed32 Value: %d\n", value)
 		default:
-			fmt.Printf("Unsupported wire type: %d\n", wireType)
-			return
+			return fmt.Errorf("unsupported wire type: %d", wireType)
 		}
 	}
 }

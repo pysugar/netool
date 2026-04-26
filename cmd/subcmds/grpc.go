@@ -72,7 +72,7 @@ List all methods in a particular service:  netool grpc grpc.server.com:443 list 
 
 		switch {
 		case strings.EqualFold(op, "list") && len(args) > 2:
-			return listServiceSymbols(ctx, target, args[2], opts...)
+			return listServiceSymbols(cmd, ctx, target, args[2], opts...)
 		case strings.EqualFold(op, "list"):
 			return listServerServices(cmd, ctx, target, opts...)
 		default:
@@ -112,7 +112,20 @@ func listServerServices(cmd *cobra.Command, ctx context.Context, target string, 
 	return nil
 }
 
-func listServiceSymbols(ctx context.Context, target, serviceName string, opts ...grpc.DialOption) error {
+type methodSummary struct {
+	Name           string `json:"name"`
+	Input          string `json:"input"`
+	Output         string `json:"output"`
+	StreamClient   bool   `json:"stream_client"`
+	StreamServer   bool   `json:"stream_server"`
+}
+
+type serviceSummary struct {
+	Service string          `json:"service"`
+	Methods []methodSummary `json:"methods"`
+}
+
+func listServiceSymbols(cmd *cobra.Command, ctx context.Context, target, serviceName string, opts ...grpc.DialOption) error {
 	conn, err := grpc.NewClient(target, opts...)
 	if err != nil {
 		return err
@@ -123,16 +136,35 @@ func listServiceSymbols(ctx context.Context, target, serviceName string, opts ..
 	if err != nil {
 		return err
 	}
+
+	var services []serviceSummary
 	for _, fd := range fds {
 		for i := 0; i < fd.Services().Len(); i++ {
 			srv := fd.Services().Get(i)
-			fmt.Printf("%s\n", srv.FullName())
+			s := serviceSummary{Service: string(srv.FullName())}
 			for j := 0; j < srv.Methods().Len(); j++ {
 				m := srv.Methods().Get(j)
-				fmt.Printf("\t%s(%s) returns (%s) stream_client=%v stream_server=%v\n",
-					m.Name(), m.Input().FullName(), m.Output().FullName(),
-					m.IsStreamingClient(), m.IsStreamingServer())
+				s.Methods = append(s.Methods, methodSummary{
+					Name:         string(m.Name()),
+					Input:        string(m.Input().FullName()),
+					Output:       string(m.Output().FullName()),
+					StreamClient: m.IsStreamingClient(),
+					StreamServer: m.IsStreamingServer(),
+				})
 			}
+			services = append(services, s)
+		}
+	}
+
+	out := cli.NewOutput(cmd)
+	if out.Format() == cli.FormatJSON {
+		return out.JSON(map[string]any{"services": services})
+	}
+	for _, s := range services {
+		out.Text("%s\n", s.Service)
+		for _, m := range s.Methods {
+			out.Text("\t%s(%s) returns (%s) stream_client=%v stream_server=%v\n",
+				m.Name, m.Input, m.Output, m.StreamClient, m.StreamServer)
 		}
 	}
 	return nil
@@ -183,10 +215,10 @@ func invokeByReflection(cmd *cobra.Command, ctx context.Context, target, fullMet
 		return nil
 	}
 
-	return invokeJSONFrame(ctx, conn, service, method, jsonData)
+	return invokeJSONFrame(cmd, ctx, conn, service, method, jsonData)
 }
 
-func invokeJSONFrame(ctx context.Context, conn *grpc.ClientConn, service, method string, jsonData []byte) error {
+func invokeJSONFrame(cmd *cobra.Command, ctx context.Context, conn *grpc.ClientConn, service, method string, jsonData []byte) error {
 	if len(jsonData) == 0 {
 		jsonData = []byte("{}")
 	}
@@ -200,7 +232,7 @@ func invokeJSONFrame(ctx context.Context, conn *grpc.ClientConn, service, method
 	if err := conn.Invoke(ctx, rpc, request, response, callOpts...); err != nil {
 		return fmt.Errorf("grpc call %s: %w", rpc, err)
 	}
-	fmt.Printf("%s\n", response.RawData)
+	cli.NewOutput(cmd).Text("%s\n", response.RawData)
 	return nil
 }
 
