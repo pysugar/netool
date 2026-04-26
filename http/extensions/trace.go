@@ -2,61 +2,62 @@ package extensions
 
 import (
 	"crypto/tls"
-	"log"
+	"log/slog"
 	"net/http/httptrace"
 	"net/textproto"
 )
 
 func NewDebugClientTrace(prefix string) *httptrace.ClientTrace {
+	log := slog.With("trace", prefix)
 	return &httptrace.ClientTrace{
 		GetConn: func(hostPort string) {
-			log.Printf("[%s] GetConn hostPort: %s\n", prefix, hostPort)
+			log.Debug("GetConn", "hostPort", hostPort)
 		},
 		GotConn: func(info httptrace.GotConnInfo) {
-			log.Printf("[%s] GotConn info: %+v\n", prefix, info)
+			log.Debug("GotConn", "info", info)
 		},
 		PutIdleConn: func(err error) {
-			log.Printf("[%s] PutIdleConn err: %v\n", prefix, err)
+			log.Debug("PutIdleConn", "err", err)
 		},
 		GotFirstResponseByte: func() {
-			log.Printf("[%s] GotFirstResponseByte\n", prefix)
+			log.Debug("GotFirstResponseByte")
 		},
 		Got100Continue: func() {
-			log.Printf("[%s] Got100Continue\n", prefix)
+			log.Debug("Got100Continue")
 		},
 		Got1xxResponse: func(code int, header textproto.MIMEHeader) error {
-			log.Printf("[%s] Got1xxResponse: %d, header: %+v\n", prefix, code, header)
+			log.Debug("Got1xxResponse", "code", code, "header", header)
 			return nil
 		},
 		DNSStart: func(info httptrace.DNSStartInfo) {
-			log.Printf("[%s] DNSStart: %+v\n", prefix, info)
+			log.Debug("DNSStart", "info", info)
 		},
 		DNSDone: func(info httptrace.DNSDoneInfo) {
-			log.Printf("[%s] DNSDone: %+v\n", prefix, info)
+			log.Debug("DNSDone", "info", info)
 		},
 		ConnectStart: func(network, addr string) {
-			log.Printf("[%s] ConnectStart: %s:%s\n", prefix, network, addr)
+			log.Debug("ConnectStart", "network", network, "addr", addr)
 		},
 		ConnectDone: func(network, addr string, err error) {
-			log.Printf("[%s] ConnectDone: %s:%s err: %+v\n", prefix, network, addr, err)
+			log.Debug("ConnectDone", "network", network, "addr", addr, "err", err)
 		},
 		TLSHandshakeStart: func() {
-			log.Printf("[%s] TLSHandshakeStart\n", prefix)
+			log.Debug("TLSHandshakeStart")
 		},
 		TLSHandshakeDone: func(state tls.ConnectionState, err error) {
-			log.Printf("[%s] TLSHandshakeDone: %+v, err: %v\n", prefix, state, err)
+			log.Debug("TLSHandshakeDone", "state", state, "err", err)
 		},
 		WroteHeaderField: func(key string, value []string) {
-			log.Printf("[%s] WroteHeaderField: %s, %v\n", prefix, key, value)
+			log.Debug("WroteHeaderField", "key", key, "value", value)
 		},
 		WroteHeaders: func() {
-			log.Printf("[%s] WroteHeaders\n", prefix)
+			log.Debug("WroteHeaders")
 		},
 		Wait100Continue: func() {
-			log.Printf("[%s] Wait100Continue\n", prefix)
+			log.Debug("Wait100Continue")
 		},
 		WroteRequest: func(info httptrace.WroteRequestInfo) {
-			log.Printf("[%s] WroteRequest: %+v\n", prefix, info)
+			log.Debug("WroteRequest", "info", info)
 		},
 	}
 }

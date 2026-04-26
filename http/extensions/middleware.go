@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -34,12 +34,16 @@ func CORSMiddleware(next http.Handler) http.Handler {
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		log.Printf("< Received HTTP Request: %s\n", FormatRequest(r))
+		slog.Info("http request received", "request", FormatRequest(r))
 		next.ServeHTTP(w, r)
 		if r.Response != nil {
-			log.Printf("Sending HTTP Response: %s\nCost: %v >\n", FormatResponse(r.Response), time.Since(start))
+			slog.Info("http response sent",
+				"response", FormatResponse(r.Response),
+				"cost", time.Since(start))
 		} else {
-			log.Printf("Finish Upgrade Response: \n%s\nCost: %v >\n", FormatResponseWriter(w), time.Since(start))
+			slog.Info("http upgrade response finished",
+				"response", FormatResponseWriter(w),
+				"cost", time.Since(start))
 		}
 	})
 }

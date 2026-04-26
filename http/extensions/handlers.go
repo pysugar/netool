@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -47,7 +47,7 @@ func DebugHandlerJSON(w http.ResponseWriter, r *http.Request) {
 
 	_, err = w.Write(jsonData)
 	if err != nil {
-		log.Printf("Error writing response: %v", err)
+		slog.Warn("write response failed", "err", err)
 	}
 }
 
@@ -59,20 +59,20 @@ func DebugHandler(w http.ResponseWriter, r *http.Request) {
 	bw := bufio.NewWriter(w)
 	defer func() {
 		if err := bw.Flush(); err != nil {
-			log.Printf("Error flushing buffer: %v", err)
+			slog.Warn("flush buffer failed", "err", err)
 		}
 	}()
 
 	if n, err := fmt.Fprintf(bw, "%s %s %s\n", r.Method, r.RequestURI, r.Proto); err != nil {
-		log.Printf("Error writing request line, size: %d, err: %v", n, err)
+		slog.Warn("write request line failed", "size", n, "err", err)
 	}
 
 	if err := r.Header.Write(bw); err != nil {
-		log.Printf("Error writing headers: %v", err)
+		slog.Warn("write headers failed", "err", err)
 	}
 
 	if _, err := fmt.Fprintln(bw); err != nil {
-		log.Printf("Error writing newline: %v", err)
+		slog.Warn("write newline failed", "err", err)
 	}
 
 	if r.Body != nil {
@@ -80,12 +80,12 @@ func DebugHandler(w http.ResponseWriter, r *http.Request) {
 		reqBody := http.MaxBytesReader(w, r.Body, 1<<20) // 1MB
 		n, err := io.Copy(bw, reqBody)
 		if err != nil {
-			log.Printf("Error reading body, size: %d, err: %v", n, err)
+			slog.Warn("read body failed", "size", n, "err", err)
 		}
 	}
 
 	if err := r.Trailer.Write(bw); err != nil {
-		log.Printf("Error writing trailer: %v", err)
+		slog.Warn("write trailer failed", "err", err)
 	}
 }
 
@@ -105,7 +105,7 @@ func getClientIP(r *http.Request) string {
 func getServerIP(r *http.Request) string {
 	addr, ok := r.Context().Value(http.LocalAddrContextKey).(net.Addr)
 	if ok {
-		log.Printf("LocalAddr: %s:%s", addr.Network(), addr.String())
+		slog.Debug("local address resolved", "network", addr.Network(), "addr", addr.String())
 		return addr.String()
 	}
 
