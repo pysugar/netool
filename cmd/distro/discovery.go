@@ -1,6 +1,7 @@
 package distro
 
 import (
+	"fmt"
 	"log/slog"
 	"strings"
 
@@ -26,8 +27,7 @@ Discover: netool discovery --endpoints=127.0.0.1:2379 --env-name=live --service=
 			namingType, _ := cmd.Flags().GetString("naming-type")
 			fn, ok := NamingDiscoverGetServices[namingType]
 			if !ok {
-				slog.Error("unsupported naming type", "type", namingType)
-				return nil
+				return fmt.Errorf("unsupported naming type: %s", namingType)
 			}
 			serviceName, _ := cmd.Flags().GetString("service")
 			endpoints, _ := cmd.Flags().GetString("endpoints")
@@ -37,8 +37,7 @@ Discover: netool discovery --endpoints=127.0.0.1:2379 --env-name=live --service=
 
 			eps, err := fn(strings.Split(endpoints, ","), envName, serviceName, group, watchEnabled)
 			if err != nil {
-				slog.Error("discover failed", "type", namingType, "err", err)
-				return err
+				return fmt.Errorf("discover %s: %w", namingType, err)
 			}
 			slog.Info("discovered",
 				"watch", watchEnabled,

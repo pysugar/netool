@@ -1,7 +1,7 @@
 package distro
 
 import (
-	"log/slog"
+	"fmt"
 	"strings"
 
 	"github.com/pysugar/netool/cmd/base"
@@ -29,8 +29,7 @@ Verify via etcd:
 			namingType, _ := cmd.Flags().GetString("naming-type")
 			fn, ok := NamingRegistryServices[namingType]
 			if !ok {
-				slog.Error("unsupported naming type", "type", namingType)
-				return nil
+				return fmt.Errorf("unsupported naming type: %s", namingType)
 			}
 			serviceName, _ := cmd.Flags().GetString("service")
 			endpoints, _ := cmd.Flags().GetString("endpoints")
@@ -38,8 +37,7 @@ Verify via etcd:
 			envName, _ := cmd.Flags().GetString("env-name")
 
 			if err := fn(strings.Split(endpoints, ","), envName, serviceName, address); err != nil {
-				slog.Error("register failed", "type", namingType, "err", err)
-				return err
+				return fmt.Errorf("register %s: %w", namingType, err)
 			}
 			return nil
 		},
