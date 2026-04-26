@@ -1,7 +1,7 @@
 package etcd
 
 import (
-	"log"
+	"log/slog"
 
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -22,7 +22,7 @@ func etcdInstancesToEndpoints(kvs []*mvccpb.KeyValue) []*Endpoint {
 	for _, kv := range kvs {
 		ep := new(Endpoint)
 		if err := ep.Decode(kv.Value); err != nil {
-			log.Printf("invalid endpoint info (%s), error: %v\n", string(kv.Value), err)
+			slog.Warn("invalid endpoint info, skipping", "value", string(kv.Value), "err", err)
 			continue
 		}
 		endpoints = append(endpoints, ep)

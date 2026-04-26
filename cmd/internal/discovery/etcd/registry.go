@@ -8,5 +8,5 @@ type (
 		Deregister(ctx context.Context) error
 	}
 
-	RegisterNamingService func(endpoints []string, env, service, address string) error
+	RegisterNamingService func(ctx context.Context, endpoints []string, env, service, address string) error
 )

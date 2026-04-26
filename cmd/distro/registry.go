@@ -36,7 +36,7 @@ Verify via etcd:
 			address, _ := cmd.Flags().GetString("address")
 			envName, _ := cmd.Flags().GetString("env-name")
 
-			if err := fn(strings.Split(endpoints, ","), envName, serviceName, address); err != nil {
+			if err := fn(cmd.Context(), strings.Split(endpoints, ","), envName, serviceName, address); err != nil {
 				return fmt.Errorf("register %s: %w", namingType, err)
 			}
 			return nil

@@ -35,7 +35,7 @@ Discover: netool discovery --endpoints=127.0.0.1:2379 --env-name=live --service=
 			group, _ := cmd.Flags().GetString("group")
 			watchEnabled, _ := cmd.Flags().GetBool("watch")
 
-			eps, err := fn(strings.Split(endpoints, ","), envName, serviceName, group, watchEnabled)
+			eps, err := fn(cmd.Context(), strings.Split(endpoints, ","), envName, serviceName, group, watchEnabled)
 			if err != nil {
 				return fmt.Errorf("discover %s: %w", namingType, err)
 			}

@@ -16,7 +16,7 @@ type (
 		Close() error
 	}
 
-	DiscoverNamingService func(etcdEndpoints []string, envName, serviceName, group string, watchEnabled bool) ([]*Endpoint, error)
+	DiscoverNamingService func(ctx context.Context, etcdEndpoints []string, envName, serviceName, group string, watchEnabled bool) ([]*Endpoint, error)
 )
 
 func FilterOrDefault(endpoints []*Endpoint, group string) []*Endpoint {

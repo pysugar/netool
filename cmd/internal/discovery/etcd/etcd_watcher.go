@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 
 	"go.etcd.io/etcd/api/v3/mvccpb"
@@ -57,25 +57,24 @@ func (w *etcdWatcher) Next() ([]*Endpoint, error) {
 		select {
 		case resp, ok := <-w.wch:
 			if !ok {
-				log.Printf("etcd watch %s encounter channel closed\n", w.serviceRegisterKey)
+				slog.Warn("etcd watch channel closed", "service", w.serviceRegisterKey)
 				w.wch = w.cli.Watch(w.ctx, w.serviceRegisterKey, clientv3.WithPrefix())
 				return nil, errors.New("channel is closed")
 			}
-			log.Printf("%s %v next: %v\n", w.serviceRegisterKey, ok, resp.Header)
+			slog.Debug("etcd watch event", "service", w.serviceRegisterKey, "revision", resp.Header.GetRevision())
 
 			changed := false
 			for _, ev := range resp.Events {
 				switch ev.Type {
 				case mvccpb.PUT:
 					endpoint := new(Endpoint)
-					err := endpoint.Decode(ev.Kv.Value)
-					if err != nil {
-						log.Printf("decode %s value error: %v\n", string(ev.Kv.Value), err)
+					if err := endpoint.Decode(ev.Kv.Value); err != nil {
+						slog.Warn("decode endpoint failed", "value", string(ev.Kv.Value), "err", err)
 						continue
 					}
 
 					if !strings.HasPrefix(string(ev.Kv.Key), w.serviceRegisterKey) {
-						log.Printf("[ERROR] %s etcd next, put another service instance %s, skip", w.serviceRegisterKey, string(ev.Kv.Key))
+						slog.Warn("put for unrelated key, skipping", "service", w.serviceRegisterKey, "key", string(ev.Kv.Key))
 						continue
 					}
 
@@ -84,12 +83,12 @@ func (w *etcdWatcher) Next() ([]*Endpoint, error) {
 				case mvccpb.DELETE:
 					address, err := extractAddressFromInstanceKey(string(ev.Kv.Key))
 					if err != nil {
-						log.Printf("extract %s address error: %v\n", string(ev.Kv.Key), err)
+						slog.Warn("extract address failed", "key", string(ev.Kv.Key), "err", err)
 						continue
 					}
 
 					if !strings.HasPrefix(string(ev.Kv.Key), w.serviceRegisterKey) {
-						log.Printf("[ERROR] %s etcd next, delete another service instance %s, skip", w.serviceRegisterKey, string(ev.Kv.Key))
+						slog.Warn("delete for unrelated key, skipping", "service", w.serviceRegisterKey, "key", string(ev.Kv.Key))
 						continue
 					}
 
@@ -102,7 +101,7 @@ func (w *etcdWatcher) Next() ([]*Endpoint, error) {
 				return w.getEndpoints(), nil
 			}
 		case <-w.ctx.Done():
-			log.Printf("etcd watcher context done\n")
+			slog.Debug("etcd watcher context done", "service", w.serviceRegisterKey)
 			return nil, w.ctx.Err()
 		}
 	}

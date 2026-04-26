@@ -3,10 +3,7 @@ package etcd
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
+	"log/slog"
 	"time"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -28,33 +25,33 @@ type (
 	}
 )
 
-func RegisterETCD(endpoints []string, envName, serviceName, address string) error {
+// RegisterETCD registers the service into etcd, then blocks until ctx is
+// cancelled (typically by SIGINT/SIGTERM propagated from cobra). On exit it
+// deregisters before returning.
+func RegisterETCD(ctx context.Context, endpoints []string, envName, serviceName, address string) error {
 	client, err := newEtcdClient(endpoints)
 	if err != nil {
-		log.Printf("unexpected err: %v\n", err)
-		return err
+		return fmt.Errorf("etcd client: %w", err)
 	}
+	defer client.Close()
 
-	appCtx := context.Background()
 	registrar := NewEtcdRegistry(client)
-	err = registrar.Register(appCtx, &Instance{
+	if err := registrar.Register(ctx, &Instance{
 		ServiceName: serviceName,
 		Env:         envName,
 		Endpoint:    Endpoint{Address: address, Group: DefaultGroup},
-	})
-
-	if err != nil {
-		log.Printf("register err: %v\n", err)
-		return err
+	}); err != nil {
+		return fmt.Errorf("register: %w", err)
 	}
 
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, os.Interrupt, syscall.SIGQUIT, syscall.SIGTERM)
-	sig := <-sigCh
-	if er := registrar.Deregister(appCtx); er != nil {
-		log.Printf("deregister failure: %v\n", er)
+	<-ctx.Done()
+	slog.Info("registrar shutting down", "service", serviceName, "cause", context.Cause(ctx))
+
+	deregisterCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if err := registrar.Deregister(deregisterCtx); err != nil {
+		slog.Warn("deregister failed", "service", serviceName, "err", err)
 	}
-	fmt.Printf("[%s] registrar received signal: %v, exiting...\n", serviceName, sig)
 	return nil
 }
 
@@ -73,8 +70,7 @@ func (r *etcdRegistry) Register(appCtx context.Context, instance *Instance) erro
 
 	lgr, err := r.client.Grant(ctx, ttl)
 	if err != nil {
-		log.Printf("register grant fail, err: %v\n", err)
-		return err
+		return fmt.Errorf("grant lease: %w", err)
 	}
 
 	instanceKey := instance.Key()
@@ -82,19 +78,21 @@ func (r *etcdRegistry) Register(appCtx context.Context, instance *Instance) erro
 
 	pr, err := r.client.Put(ctx, instanceKey, value, clientv3.WithLease(lgr.ID))
 	if err != nil {
-		log.Printf("register put fail, err: %v\n", err)
-		return err
+		return fmt.Errorf("put %s: %w", instanceKey, err)
 	}
 
 	r.keepaliveCh, err = r.client.KeepAlive(context.Background(), lgr.ID)
 	if err != nil {
-		log.Printf("register keepalive fail, err: %v\n", err)
-		return err
+		return fmt.Errorf("keepalive: %w", err)
 	}
 	r.lease = lgr.ID
 	r.instance = instance
 
-	log.Printf("register success\n\tinfo: (%s - %s), \n\tresponse: %v \n\tlease: %v\n", instanceKey, value, pr, lgr)
+	slog.Info("etcd register success",
+		"key", instanceKey,
+		"value", value,
+		"put_revision", pr.Header.GetRevision(),
+		"lease", lgr.ID)
 
 	go r.keepalive()
 	return nil
@@ -107,8 +105,12 @@ func (r *etcdRegistry) Deregister(ctx context.Context) error {
 	defer cancel()
 
 	lrr, err := r.client.Revoke(ctx, r.lease)
-	log.Printf("deregister with revoked (%v, %v)", lrr, err)
-	return err
+	if err != nil {
+		slog.Warn("revoke lease failed", "lease", r.lease, "err", err)
+		return err
+	}
+	slog.Info("deregistered", "lease", r.lease, "revision", lrr.Header.GetRevision())
+	return nil
 }
 
 func (r *etcdRegistry) keepalive() {
@@ -116,18 +118,18 @@ func (r *etcdRegistry) keepalive() {
 		select {
 		case resp, ok := <-r.keepaliveCh:
 			if !ok {
-				log.Printf("etcd keepalive channel closed, attempting to retry registration...\n")
+				slog.Warn("etcd keepalive channel closed, retrying registration")
 				go r.retry()
 				return
-			} else if resp == nil {
-				log.Printf("etcd keepalive response is nil, retrying registration...\n")
-				go r.retry()
-				return
-			} else {
-				log.Printf("keepalive successful: %v\n", resp)
 			}
+			if resp == nil {
+				slog.Warn("etcd keepalive response nil, retrying registration")
+				go r.retry()
+				return
+			}
+			slog.Debug("keepalive ok", "lease", resp.ID, "ttl", resp.TTL)
 		case <-r.ctx.Done():
-			log.Printf("keepalive context done, exiting keepalive loop\n")
+			slog.Debug("keepalive context done")
 			return
 		}
 	}
@@ -140,14 +142,14 @@ func (r *etcdRegistry) retry() {
 	for {
 		select {
 		case <-ticker.C:
-			err := r.Register(context.Background(), r.instance)
-			if err == nil {
-				log.Printf("etcd register retry success\n")
+			if err := r.Register(context.Background(), r.instance); err == nil {
+				slog.Info("etcd register retry success")
 				return
+			} else {
+				slog.Warn("etcd register retry failed", "err", err)
 			}
-			log.Printf("retry register error: %v\n", err)
 		case <-r.ctx.Done():
-			log.Printf("retry context done, exiting retry loop\n")
+			slog.Debug("retry context done")
 			return
 		}
 	}
