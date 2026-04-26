@@ -4,28 +4,32 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
+	"os"
+
 	"github.com/pysugar/netool/cmd/base"
 	"github.com/spf13/cobra"
-	"io"
-	"log"
-	"os"
 )
 
 var readProtoCmd = &cobra.Command{
 	Use:   `read-proto --data-file=hello.bin`,
-	Short: "Read proto binary file",
+	Short: "Decode a raw protobuf wire-format file",
 	Long: `
-Read proto binary file.
+Decode a raw protobuf binary file (no schema required).
 
-Read proto binary file: netool read-proto -n 32
+  netool read-proto --data-file=hello.bin
 `,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		filename, _ := cmd.Flags().GetString("data-file")
+		if filename == "" {
+			return fmt.Errorf("--data-file is required")
+		}
 		data, err := os.ReadFile(filename)
 		if err != nil {
-			log.Printf("read file %s error: %v\n", filename, err)
+			return fmt.Errorf("read file %s: %w", filename, err)
 		}
 		ParseProtobuf(data)
+		return nil
 	},
 }
 

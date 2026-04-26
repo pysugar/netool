@@ -2,28 +2,33 @@ package subcmds
 
 import (
 	"fmt"
+
 	"github.com/pysugar/netool/cmd/base"
+	"github.com/pysugar/netool/cmd/internal/cli"
 	"github.com/pysugar/netool/uuid"
 	"github.com/spf13/cobra"
 )
 
 var randStrCmd = &cobra.Command{
 	Use:   `rand [-n 64]`,
-	Short: "Generate Rand String",
+	Short: "Generate a random string",
 	Long: `
-Generate Rand String.
+Generate a random alphanumeric string.
 
-Rand String: netool rand -n 32
+  netool rand -n 32
 `,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		n, _ := cmd.Flags().GetInt("num")
-		var output string
 		if n <= 0 {
-			output = "the num must greater than 0"
-		} else {
-			output = uuid.GenerateRandomString(n)
+			return fmt.Errorf("--num must be greater than 0 (got %d)", n)
 		}
-		fmt.Println(output)
+		s := uuid.GenerateRandomString(n)
+		out := cli.NewOutput(cmd)
+		if out.Format() == cli.FormatJSON {
+			return out.JSON(map[string]string{"value": s})
+		}
+		out.Text("%s\n", s)
+		return nil
 	},
 }
 
