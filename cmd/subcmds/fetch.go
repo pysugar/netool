@@ -99,13 +99,17 @@ func httpCall(cmd *cobra.Command, ctx context.Context, targetURL *url.URL) error
 	headers, _ := cmd.Flags().GetStringSlice("header")
 	userAgent, _ := cmd.Flags().GetString("user-agent")
 
-	var body io.Reader
-	contentLength := int64(-1)
+	var (
+		body          io.Reader
+		contentLength int64
+		hasBody       bool
+	)
 	if methodTakesBody(method) {
 		data, _ := cmd.Flags().GetString("data")
 		if data != "" {
 			body = strings.NewReader(data)
 			contentLength = int64(len(data))
+			hasBody = true
 		}
 	}
 
@@ -119,7 +123,9 @@ func httpCall(cmd *cobra.Command, ctx context.Context, targetURL *url.URL) error
 	for k, v := range cli.ParseHeaders(headers) {
 		req.Header[k] = v
 	}
-	req.ContentLength = contentLength
+	if hasBody {
+		req.ContentLength = contentLength
+	}
 
 	res, err := client.NewFetcher().Do(ctx, req)
 	if err != nil {
