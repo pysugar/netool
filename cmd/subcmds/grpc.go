@@ -2,7 +2,6 @@ package subcmds
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -31,6 +30,8 @@ func parseGRPCMetadata(raw []string) metadata.MD {
 
 const contextPathKey = "contextPath"
 
+var grpcTLS *cli.TLSFlags
+
 var grpcCmd = &cobra.Command{
 	Use:   "grpc TARGET SERVICE/METHOD [flags]",
 	Short: "Call a gRPC service (JSON in, JSON out)",
@@ -47,12 +48,9 @@ List all methods in a particular service:  netool grpc grpc.server.com:443 list 
 			return fmt.Errorf("usage: netool grpc TARGET SERVICE/METHOD")
 		}
 
-		plaintextMode, _ := cmd.Flags().GetBool("plaintext")
-		insecureMode, _ := cmd.Flags().GetBool("insecure")
-
-		cred := insecure.NewCredentials()
-		if !plaintextMode && insecureMode {
-			cred = credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})
+		cred, err := grpcCredentials(cmd)
+		if err != nil {
+			return err
 		}
 
 		target := args[0]
@@ -83,12 +81,31 @@ List all methods in a particular service:  netool grpc grpc.server.com:443 list 
 }
 
 func init() {
-	grpcCmd.Flags().BoolP("plaintext", "p", false, "Use plain-text HTTP/2 when connecting to server (no TLS)")
-	grpcCmd.Flags().BoolP("insecure", "i", false, "Skip server certificate and domain verification (skip TLS)")
+	grpcCmd.Flags().Bool("plaintext", false, "force plaintext HTTP/2 even when TLS flags are set")
 	grpcCmd.Flags().StringP("data", "d", "{}", "request data")
 	grpcCmd.Flags().StringP("context-path", "c", "", "context path")
-	grpcCmd.Flags().StringArrayP("header", "H", []string{}, "Extra header to include in information sent")
+	grpcCmd.Flags().StringArrayP("header", "H", []string{}, "extra header to include with the request (repeatable)")
+	grpcTLS = cli.AddTLS(grpcCmd)
 	base.AddSubCommands(grpcCmd)
+}
+
+// grpcCredentials picks transport credentials in this order:
+//   - --plaintext     -> always plaintext, ignore TLS flags
+//   - any --tls-*     -> credentials.NewTLS(<config from cli.TLSFlags>)
+//   - default         -> plaintext (matches the prior default of insecure.NewCredentials)
+func grpcCredentials(cmd *cobra.Command) (credentials.TransportCredentials, error) {
+	plaintext, _ := cmd.Flags().GetBool("plaintext")
+	if plaintext {
+		return insecure.NewCredentials(), nil
+	}
+	cfg, err := grpcTLS.Config()
+	if err != nil {
+		return nil, err
+	}
+	if cfg == nil {
+		return insecure.NewCredentials(), nil
+	}
+	return credentials.NewTLS(cfg), nil
 }
 
 func listServerServices(cmd *cobra.Command, ctx context.Context, target string, opts ...grpc.DialOption) error {
