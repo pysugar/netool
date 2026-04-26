@@ -22,13 +22,13 @@ Start an HTTP debug endpoint that echoes request detail.
 Start a DevTool for HTTP: netool devtool --port=8080 --verbose
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		port, _ := cmd.Flags().GetInt("port")
+		port := cli.Port(cmd)
 		return runDevtoolServer(cmd.Context(), port, cli.Verbose(cmd))
 	},
 }
 
 func init() {
-	devtoolCmd.Flags().IntP("port", "p", 8080, "devtool server port")
+	cli.AddPort(devtoolCmd, 8080)
 	base.AddSubCommands(devtoolCmd)
 }
 

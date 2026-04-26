@@ -30,7 +30,7 @@ Start a gRPC echo service.
 Start a gRPC echo service: netool echoservice --port=8080
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		port, _ := cmd.Flags().GetInt("port")
+		port := cli.Port(cmd)
 		grpcSrv := server.BuildServer("echoservice", func(s *grpc.Server) {
 			pb.RegisterEchoServiceServer(s, &echoServer{})
 		})
@@ -47,6 +47,6 @@ Start a gRPC echo service: netool echoservice --port=8080
 }
 
 func init() {
-	echoServiceCmd.Flags().IntP("port", "p", 8080, "echo service port")
+	cli.AddPort(echoServiceCmd, 8080)
 	base.AddSubCommands(echoServiceCmd)
 }

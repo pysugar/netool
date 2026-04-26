@@ -21,6 +21,14 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func parseGRPCMetadata(raw []string) metadata.MD {
+	md := metadata.MD{}
+	for k, vs := range cli.ParseHeaders(raw) {
+		md.Append(strings.ToLower(k), vs...)
+	}
+	return md
+}
+
 const contextPathKey = "contextPath"
 
 var grpcCmd = &cobra.Command{
@@ -58,7 +66,7 @@ List all methods in a particular service:  netool grpc grpc.server.com:443 list 
 			ctx = context.WithValue(ctx, contextPathKey, contextPath)
 		}
 		headers, _ := cmd.Flags().GetStringArray("header")
-		ctx = metadata.NewOutgoingContext(ctx, parseMetadata(headers))
+		ctx = metadata.NewOutgoingContext(ctx, parseGRPCMetadata(headers))
 
 		opts := []grpc.DialOption{grpc.WithTransportCredentials(cred)}
 
@@ -81,19 +89,6 @@ func init() {
 	grpcCmd.Flags().StringP("context-path", "c", "", "context path")
 	grpcCmd.Flags().StringArrayP("header", "H", []string{}, "Extra header to include in information sent")
 	base.AddSubCommands(grpcCmd)
-}
-
-func parseMetadata(headers []string) metadata.MD {
-	md := metadata.MD{}
-	for _, h := range headers {
-		parts := strings.SplitN(h, ":", 2)
-		if len(parts) != 2 {
-			slog.Warn("invalid header format", "header", h)
-			continue
-		}
-		md.Append(strings.ToLower(strings.TrimSpace(parts[0])), strings.TrimSpace(parts[1]))
-	}
-	return md
 }
 
 func listServerServices(cmd *cobra.Command, ctx context.Context, target string, opts ...grpc.DialOption) error {

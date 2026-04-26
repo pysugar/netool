@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/http/httptrace"
 	"net/url"
@@ -117,7 +116,7 @@ func httpCall(cmd *cobra.Command, ctx context.Context, targetURL *url.URL) error
 	if userAgent != "" {
 		req.Header.Set("User-Agent", userAgent)
 	}
-	for k, v := range parseHeaders(headers) {
+	for k, v := range cli.ParseHeaders(headers) {
 		req.Header[k] = v
 	}
 	req.ContentLength = contentLength
@@ -211,17 +210,4 @@ func methodTakesBody(method string) bool {
 		return true
 	}
 	return false
-}
-
-func parseHeaders(raw []string) http.Header {
-	h := http.Header{}
-	for _, item := range raw {
-		k, v, ok := strings.Cut(item, ":")
-		if !ok {
-			slog.Warn("invalid header, expected K:V", "header", item)
-			continue
-		}
-		h.Add(strings.TrimSpace(k), strings.TrimSpace(v))
-	}
-	return h
 }

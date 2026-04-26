@@ -26,13 +26,13 @@ Start a transparent HTTP proxy (CONNECT tunnel + plain HTTP forward).
 Start a Transparent HTTP Proxy: netool httpproxy --port=8080
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		port, _ := cmd.Flags().GetInt("port")
+		port := cli.Port(cmd)
 		return runHTTPProxy(cmd.Context(), port)
 	},
 }
 
 func init() {
-	httpProxyCmd.Flags().IntP("port", "p", 8080, "http proxy port")
+	cli.AddPort(httpProxyCmd, 8080)
 	base.AddSubCommands(httpProxyCmd)
 }
 

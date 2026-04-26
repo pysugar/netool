@@ -25,13 +25,13 @@ Start file server: netool fileserver --dir=. --port=8088
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		sharedDirectory, _ := cmd.Flags().GetString("dir")
-		port, _ := cmd.Flags().GetInt("port")
+		port := cli.Port(cmd)
 		return runFileServer(cmd.Context(), sharedDirectory, port, cli.Verbose(cmd))
 	},
 }
 
 func init() {
-	fileServerCmd.Flags().IntP("port", "p", 8080, "file server port")
+	cli.AddPort(fileServerCmd, 8080)
 	fileServerCmd.Flags().StringP("dir", "d", ".", "file server directory")
 	base.AddSubCommands(fileServerCmd)
 }
