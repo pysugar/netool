@@ -1,5 +1,7 @@
 .*
+.docs/
 .code/
+.claude/
 .vscode/
 .idea/
 *.iml
@@ -38,3 +40,8 @@ netool
 *.pem
 
 agent
+
+examples/grpc/clients/httpclient/httpclient
+examples/grpc/httproxy/httproxy
+examples/grpc/https2/https2
+examples/grpc/mux/mux
