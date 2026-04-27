@@ -13,6 +13,10 @@ var rootCmd = &cobra.Command{
 	Use:   "netool",
 	Short: "net tool",
 	Long:  "A simple CLI for Net tool",
+	// Cobra prints the full Usage block for any RunE error by default,
+	// which buries the actual error message under a wall of help. Errors
+	// are still printed (we don't silence those), just without the dump.
+	SilenceUsage: true,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		cli.ConfigureLogging(cmd)
 	},
@@ -35,7 +39,7 @@ func Run() {
 	ctx, cancel := cli.SignalContext(context.Background())
 	defer cancel()
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
-		fmt.Println(err)
+		// cobra has already printed "Error: <msg>" to stderr; just exit.
 		os.Exit(1)
 	}
 }

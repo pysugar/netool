@@ -2,10 +2,10 @@ package distro
 
 import (
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/pysugar/netool/cmd/base"
+	"github.com/pysugar/netool/cmd/internal/cli"
 	etcddisc "github.com/pysugar/netool/cmd/internal/discovery/etcd"
 	"github.com/spf13/cobra"
 )
@@ -39,11 +39,28 @@ Discover: netool discovery --endpoints=127.0.0.1:2379 --env-name=live --service=
 			if err != nil {
 				return fmt.Errorf("discover %s: %w", namingType, err)
 			}
-			slog.Info("discovered",
-				"watch", watchEnabled,
-				"path", "/"+envName+"/"+serviceName+":"+group)
+
+			path := "/" + envName + "/" + serviceName + ":" + group
+			out := cli.NewOutput(cmd)
+			if out.Format() == cli.FormatJSON {
+				type endpoint struct {
+					Address string `json:"address"`
+					Group   string `json:"group"`
+				}
+				rows := make([]endpoint, 0, len(eps))
+				for _, ep := range eps {
+					rows = append(rows, endpoint{Address: ep.Address, Group: ep.Group})
+				}
+				return out.JSON(map[string]any{
+					"path":      path,
+					"watch":     watchEnabled,
+					"endpoints": rows,
+				})
+			}
+
+			out.Text("path: %s (watch=%v)\n", path, watchEnabled)
 			for _, ep := range eps {
-				slog.Info("endpoint", "address", ep.Address, "group", ep.Group)
+				out.Text("\t%s\t%s\n", ep.Address, ep.Group)
 			}
 			return nil
 		},
