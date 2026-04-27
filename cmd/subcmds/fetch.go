@@ -193,8 +193,9 @@ func gRPCCall(cmd *cobra.Command, ctx context.Context, targetURL *url.URL) error
 	if err != nil {
 		return fmt.Errorf("serialize response JSON: %w", err)
 	}
-	out := cli.NewOutput(cmd)
-	out.Text("%s\n", responseJSON)
+	// responseJSON is already JSON bytes; route via Writer so it survives
+	// --output json (out.Text would suppress it).
+	fmt.Fprintf(cli.NewOutput(cmd).Writer(), "%s\n", responseJSON)
 	return nil
 }
 
