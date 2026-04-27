@@ -24,6 +24,7 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.PersistentFlags().BoolP(cli.FlagVerbose, "V", false, "verbose output (debug-level logging)")
 	rootCmd.PersistentFlags().StringP(cli.FlagOutput, "o", string(cli.FormatText), "output format: text|json")
+	rootCmd.PersistentFlags().String(cli.FlagLogFormat, cli.LogFormatText, "log handler format: text|json")
 }
 
 func AddSubCommands(cmds ...*cobra.Command) {

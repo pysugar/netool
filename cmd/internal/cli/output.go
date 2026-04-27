@@ -62,13 +62,19 @@ func (o *stdOutput) Writer() io.Writer { return o.w }
 
 func (o *stdOutput) Format() OutputFormat { return o.format }
 
-// ConfigureLogging switches the default slog logger to human-friendly text on
-// stderr and raises the level to debug when --verbose is set.
+// ConfigureLogging switches the default slog logger to the format requested
+// via --log-format (text or json) on stderr and raises the level to debug
+// when --verbose is set.
 func ConfigureLogging(cmd *cobra.Command) {
 	level := slog.LevelInfo
 	if Verbose(cmd) {
 		level = slog.LevelDebug
 	}
-	h := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level})
+	opts := &slog.HandlerOptions{Level: level}
+
+	var h slog.Handler = slog.NewTextHandler(os.Stderr, opts)
+	if v, _ := cmd.Flags().GetString(FlagLogFormat); strings.ToLower(v) == LogFormatJSON {
+		h = slog.NewJSONHandler(os.Stderr, opts)
+	}
 	slog.SetDefault(slog.New(h))
 }

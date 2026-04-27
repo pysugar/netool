@@ -11,9 +11,13 @@ import (
 )
 
 const (
-	FlagVerbose = "verbose"
-	FlagOutput  = "output"
-	FlagTimeout = "timeout"
+	FlagVerbose   = "verbose"
+	FlagOutput    = "output"
+	FlagTimeout   = "timeout"
+	FlagLogFormat = "log-format"
+
+	LogFormatText = "text"
+	LogFormatJSON = "json"
 
 	FlagTLSInsecure = "insecure"
 	FlagTLSCA       = "tls-ca"
