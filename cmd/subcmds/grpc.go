@@ -209,17 +209,17 @@ func invokeByReflection(cmd *cobra.Command, ctx context.Context, target, fullMet
 
 	methodDesc, err := grpcrefl.LoadViaReflection(ctx, conn, service, method)
 	if err != nil {
-		st, ok := status.FromError(err)
-		if !ok || st.Code() != codes.Unimplemented {
-			// Fall through to the untyped JSON frame path when reflection
-			// is unavailable or the symbol is unknown.
-			if !ok {
-				slog.Warn("reflection unavailable, using JSON frame codec", "err", err)
-			}
-			methodDesc = nil
-		} else {
+		// codes.Unimplemented from the reflection RPC means the server does
+		// not register reflection at all — fall through to the JSON-frame
+		// codec so the actual call still has a chance. Other errors (typo'd
+		// service name, network failure) are surfaced to the user, who is
+		// better served by a precise reflection-stage error than an opaque
+		// server-side Unimplemented from the wrong code path.
+		if st, ok := status.FromError(err); !ok || st.Code() != codes.Unimplemented {
 			return err
 		}
+		slog.Debug("reflection unavailable, using JSON frame codec", "err", err)
+		methodDesc = nil
 	}
 
 	if methodDesc != nil {
