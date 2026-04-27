@@ -140,6 +140,29 @@ func TestGRPCInvokeEchoViaReflection(t *testing.T) {
 	}
 }
 
+// The response from a successful gRPC call is already JSON, so --output json
+// must not drop it the way Output.Text would.
+func TestGRPCInvokeEchoPreservesJSONOutput(t *testing.T) {
+	addr := startEchoServer(t)
+	res := cmdtest.Run(t, newGRPCRoot(t),
+		"--output", "json", "grpc", "-d", `{"message":"world"}`,
+		addr, "proto.EchoService/Echo")
+	if res.Err != nil {
+		t.Fatalf("run: %v (stderr=%q)", res.Err, res.Stderr)
+	}
+	body := strings.TrimSpace(res.Stdout)
+	if body == "" {
+		t.Fatal("--output json produced empty stdout")
+	}
+	var got map[string]string
+	if err := json.Unmarshal([]byte(body), &got); err != nil {
+		t.Fatalf("response not JSON: %v\nstdout=%q", err, res.Stdout)
+	}
+	if got["message"] != "world" {
+		t.Fatalf("echo round-trip mismatch: %+v", got)
+	}
+}
+
 func TestGRPCMissingArgs(t *testing.T) {
 	res := cmdtest.Run(t, newGRPCRoot(t), "grpc", "127.0.0.1:0")
 	if res.Err == nil {

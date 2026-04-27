@@ -227,8 +227,10 @@ func invokeByReflection(cmd *cobra.Command, ctx context.Context, target, fullMet
 		if er != nil {
 			return er
 		}
-		out := cli.NewOutput(cmd)
-		out.Text("%s\n", resp)
+		// resp is already protojson-encoded; emit it verbatim regardless of
+		// --output, since the response is structurally JSON either way and
+		// out.Text would otherwise drop it in JSON mode.
+		writeRawResponse(cmd, resp)
 		return nil
 	}
 
@@ -249,8 +251,15 @@ func invokeJSONFrame(cmd *cobra.Command, ctx context.Context, conn *grpc.ClientC
 	if err := conn.Invoke(ctx, rpc, request, response, callOpts...); err != nil {
 		return fmt.Errorf("grpc call %s: %w", rpc, err)
 	}
-	cli.NewOutput(cmd).Text("%s\n", response.RawData)
+	writeRawResponse(cmd, response.RawData)
 	return nil
+}
+
+// writeRawResponse prints already-JSON bytes from a gRPC call to stdout. It
+// bypasses Output.Text because the payload is structured: forcing it through
+// Text would silently drop the result in --output json mode.
+func writeRawResponse(cmd *cobra.Command, payload []byte) {
+	fmt.Fprintf(cli.NewOutput(cmd).Writer(), "%s\n", payload)
 }
 
 func contextPathStreamInterceptor(contextPath string) grpc.StreamClientInterceptor {

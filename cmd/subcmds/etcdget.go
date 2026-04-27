@@ -47,6 +47,17 @@ Examples:
 		}
 
 		out := cli.NewOutput(cmd)
+		if out.Format() == cli.FormatJSON {
+			type pair struct {
+				Key   string `json:"key"`
+				Value string `json:"value"`
+			}
+			rows := make([]pair, 0, len(resp.Kvs))
+			for _, kv := range resp.Kvs {
+				rows = append(rows, pair{Key: string(kv.Key), Value: string(kv.Value)})
+			}
+			return out.JSON(map[string]any{"results": rows})
+		}
 		for _, kv := range resp.Kvs {
 			out.Text("%s : %s\n", kv.Key, string(kv.Value))
 		}
