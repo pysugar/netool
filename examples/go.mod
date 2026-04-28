@@ -1,12 +1,14 @@
 module github.com/pysugar/netool/examples
 
-go 1.21
+go 1.22.0
+
+toolchain go1.22.12
 
 replace github.com/pysugar/netool => ../
 
 require (
 	github.com/pysugar/netool v0.0.0-00010101000000-000000000000
-	google.golang.org/protobuf v1.35.1
+	google.golang.org/protobuf v1.36.4
 )
 
 require (
@@ -15,8 +17,8 @@ require (
 	github.com/jhump/protoreflect v1.17.0
 	github.com/pires/go-proxyproto v0.8.0
 	github.com/prometheus/client_golang v1.20.5
-	golang.org/x/net v0.30.0
-	google.golang.org/grpc v1.67.1
+	golang.org/x/net v0.35.0
+	google.golang.org/grpc v1.71.3
 )
 
 require (
@@ -29,8 +31,8 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.55.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250115164207-1a7da9e5054f // indirect
 )

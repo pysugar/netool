@@ -1,6 +1,8 @@
 module github.com/pysugar/netool/snippets/httproto
 
-go 1.21
+go 1.22.0
+
+toolchain go1.22.12
 
 replace github.com/pysugar/netool => ../../
 
@@ -9,8 +11,8 @@ require (
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/prometheus/client_golang v1.20.5
 	github.com/pysugar/netool v0.0.0-00010101000000-000000000000
-	golang.org/x/net v0.31.0
-	google.golang.org/grpc v1.67.1
+	golang.org/x/net v0.35.0
+	google.golang.org/grpc v1.71.3
 )
 
 require (
@@ -21,8 +23,8 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.55.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
-	google.golang.org/protobuf v1.34.2 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250115164207-1a7da9e5054f // indirect
+	google.golang.org/protobuf v1.36.4 // indirect
 )
