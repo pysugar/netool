@@ -23,15 +23,19 @@ type Result struct {
 // The command's context is set to t.Context() (or context.Background() on
 // older Go versions) so tests can cancel work via t.Cleanup.
 //
-// Cobra commands are typically package-level vars, so flag values bleed
-// between successive Run() calls in the same test binary. To keep tests
-// independent, every flag on the root tree is reset to its declared default
-// before parsing. This means a test that omits --output always sees text
-// regardless of what a previous test passed.
+// Cobra commands are typically package-level vars, so both flag values and
+// per-command ctx bleed between successive Run() calls in the same test
+// binary. Cobra v1.8.1 only inherits the parent ctx when the subcommand's
+// ctx is nil (command.go:1113), so a previous test's t.Context() — already
+// canceled by t.Cleanup — would otherwise persist on the subcommand and
+// every dial in a follow-up test would fail with "context canceled". Each
+// Run resets both flags and ctx on the entire command tree so tests stay
+// independent regardless of execution order.
 func Run(t *testing.T, root *cobra.Command, args ...string) Result {
 	t.Helper()
 
 	resetFlags(root)
+	resetContext(root)
 
 	var stdout, stderr bytes.Buffer
 	root.SetOut(&stdout)
@@ -56,6 +60,13 @@ func resetFlags(cmd *cobra.Command) {
 	resetFlagSet(cmd.PersistentFlags())
 	for _, c := range cmd.Commands() {
 		resetFlags(c)
+	}
+}
+
+func resetContext(cmd *cobra.Command) {
+	cmd.SetContext(nil)
+	for _, c := range cmd.Commands() {
+		resetContext(c)
 	}
 }
 
