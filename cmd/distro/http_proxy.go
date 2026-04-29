@@ -92,10 +92,10 @@ func handleConnectMethod(clientConn net.Conn, request *http.Request) {
 	if err != nil {
 		slog.Warn("connect target failed", "target", targetHost, "err", err)
 		const errorHeaders = "\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n"
-		fmt.Fprintf(clientConn, "HTTP/1.1 503 Service Unavailable"+errorHeaders+err.Error())
+		fmt.Fprint(clientConn, "HTTP/1.1 503 Service Unavailable"+errorHeaders+err.Error())
 		return
 	}
-	fmt.Fprintf(clientConn, "HTTP/1.1 200 Connection Established\r\n\r\n")
+	fmt.Fprint(clientConn, "HTTP/1.1 200 Connection Established\r\n\r\n")
 	defer targetConn.Close()
 
 	slog.Debug("tunnel",
@@ -128,7 +128,7 @@ func handleHTTPRequest(clientConn net.Conn, request *http.Request) {
 	if err != nil {
 		slog.Warn("connect target failed", "target", targetHost, "err", err)
 		const errorHeaders = "\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n"
-		fmt.Fprintf(clientConn, "HTTP/1.1 "+"503 Service Unavailable"+errorHeaders+err.Error())
+		fmt.Fprint(clientConn, "HTTP/1.1 503 Service Unavailable"+errorHeaders+err.Error())
 		return
 	}
 	defer targetConn.Close()
@@ -150,7 +150,7 @@ func handleHTTPRequest(clientConn net.Conn, request *http.Request) {
 	if err := request.Write(targetConn); err != nil {
 		slog.Warn("forward request failed", "err", err)
 		const errorHeaders = "\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n"
-		fmt.Fprintf(clientConn, "HTTP/1.1 "+"503 Service Unavailable"+errorHeaders+err.Error())
+		fmt.Fprint(clientConn, "HTTP/1.1 503 Service Unavailable"+errorHeaders+err.Error())
 		return
 	}
 
